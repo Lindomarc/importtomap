@@ -15,6 +15,8 @@ return new class extends Migration
             $table->string('veiculo')->nullable();
             $table->string('meio')->nullable();
             $table->string('praca')->nullable();
+            $table->string('lat')->nullable();
+            $table->string('lng')->nullable();
             $table->timestamps();
         });
     }

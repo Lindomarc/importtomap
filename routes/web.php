@@ -20,6 +20,10 @@ Route::get('imports', function () {
     return Inertia::render('Imports');
 })->middleware(['auth', 'verified'])->name('imports');
 
+Route::get('campanhas', function () {
+    return Inertia::render('Campanhas');
+})->middleware(['auth', 'verified'])->name('campanhas');
+
 Route::get('/imports/upload', [ImportController::class, 'index'])->name('imports.upload');
 Route::post('/imports/process', [ImportController::class, 'import'])->name('imports.process');
 

@@ -46,11 +46,11 @@
               size="sm"
               @click="clearFile"
             >
-              <X class="h-4 w-4" />
+              ✕
             </Button>
           </div>
           <div v-if="selectedFile" class="flex items-center gap-2 text-sm text-muted-foreground">
-            <FileIcon class="h-4 w-4" />
+            <span>📄</span>
             <span>{{ selectedFile.name }}</span>
             <span class="text-xs">({{ formatFileSize(selectedFile.size) }})</span>
           </div>
@@ -60,9 +60,9 @@
         <!-- Botões de Ação -->
         <div class="flex items-center gap-4">
           <Button :disabled="loading" type="submit">
-            <Upload v-if="!loading" class="h-4 w-4 mr-2" />
-            <Loader2 v-else class="h-4 w-4 mr-2 animate-spin" />
-            {{ loading ? 'Importando...' : 'Importar' }}
+            <span v-if="!loading">📤</span>
+            <span v-else class="animate-spin">⏳</span>
+            <span class="ml-2">{{ loading ? 'Importando...' : 'Importar' }}</span>
           </Button>
 
           <Button
@@ -98,8 +98,8 @@
             ]"
           >
             <div class="flex items-center gap-2">
-              <CheckCircle v-if="messageType === 'success'" class="h-4 w-4" />
-              <AlertCircle v-else class="h-4 w-4" />
+              <span v-if="messageType === 'success'">✅</span>
+              <span v-else>⚠️</span>
               <span>{{ message }}</span>
             </div>
           </div>
@@ -131,15 +131,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 // Removido: Select components não disponíveis
-import { 
-  Upload, 
-  X, 
-  FileIcon, 
-  Loader2, 
-  CheckCircle, 
-  AlertCircle 
-} from 'lucide-react';
-
+ 
 import { type BreadcrumbItem } from '@/types';
 
 interface ImportType {
@@ -166,10 +158,7 @@ const errors = ref<Record<string, string>>({});
 
 // Import types options
 const importTypes: ImportType[] = [
-  { label: 'Campanhas', value: 'campanhas' },
-  { label: 'Produtos', value: 'produtos' },
-  { label: 'Clientes', value: 'clientes' },
-  { label: 'Fornecedores', value: 'fornecedores' },
+  { label: 'Campanhas', value: 'campanhas' }
 ];
 
 // File handling
