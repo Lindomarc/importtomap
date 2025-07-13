@@ -15,7 +15,6 @@ before_script:
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
   - ssh-keyscan -p ${DEPLOY_SERVER_PORT} -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
-  - ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
 
 deploy:
@@ -56,6 +55,7 @@ deploy:
               \"fields\": [
                 { \"name\": \"Servidor\", \"value\": \"${DEPLOY_SERVER}\", \"inline\": true },
                 { \"name\": \"Status\", \"value\": \"✅ Sucesso\", \"inline\": true },
+                { \"name\": \"Porta\", \"value\": \"${DEPLOY_SERVER_PORT}\", \"inline\": false }
                 { \"name\": \"Caminho\", \"value\": \"${DEPLOY_PATH}\", \"inline\": false }
               ],
               \"timestamp\": \"$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")\"
@@ -63,7 +63,7 @@ deploy:
           }" \
           $DISCORD_WEBHOOK
       EOF
-    - echo "🎉 Deploy concluído no servidor ${DEPLOY_SERVER}!"
+    - echo "🎉 Deploy concluído no servidor ${DEPLOY_SERVER} porta ${DEPLOY_SERVER_PORT}!"
 
   only:
     - main  # Garantir que o deploy só ocorra na branch 'main'
