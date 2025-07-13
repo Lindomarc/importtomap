@@ -1,0 +1,69 @@
+stages:
+  - deploy
+variables:
+  SSH_PRIVATE_KEY: ${SSH_PRIVATE_KEY}
+  DEPLOY_USER: ${DEPLOY_USER}
+  DEPLOY_SERVER: ${DEPLOY_SERVER}
+  DEPLOY_PATH: ${DEPLOY_PATH}
+  DISCORD_WEBHOOK: ${DISCORD_WEBHOOK}
+
+before_script:
+  - 'which ssh-agent || apt-get update -y && apt-get install -y openssh-client'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+
+deploy:
+  stage: deploy
+  script:
+    - echo "🚀 Iniciando o deploy para $DEPLOY_SERVER..."
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_SERVER << EOF
+        set -e
+        cd ${DEPLOY_PATH} || exit 1
+        echo \${PWD}
+        echo "🔄 Atualizando repositório..."
+        git fetch --all
+        git reset --hard origin/main
+        echo "📦 Instalando dependências do Composer..."
+        composer install --no-dev --optimize-autoloader || exit 1
+        echo "📜 Rodando migrations do Laravel..."
+        php artisan migrate --force || exit 1
+        echo "📦 Instalando dependências do NPM..."
+        npm install || exit 1
+        echo "🛠️ Realizando o build do Vue3..."
+        npm run build || exit 1
+        echo "🧹 Limpando e otimizando caches..."
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+        echo "✅ Deploy concluído com sucesso!"
+        echo "Enviando notificação para o Discord..."
+        curl -X POST \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"username\": \"Deploy Bot\",
+            \"avatar_url\": \"https://cdn-icons-png.flaticon.com/512/1087/1087815.png\",
+            \"embeds\": [{
+              \"title\": \"🚀 Deploy Concluído!\",
+              \"description\": \"O deploy para o servidor **${DEPLOY_SERVER}** foi concluído com sucesso.\",
+              \"color\": 3066993,
+              \"fields\": [
+                { \"name\": \"Servidor\", \"value\": \"${DEPLOY_SERVER}\", \"inline\": true },
+                { \"name\": \"Status\", \"value\": \"✅ Sucesso\", \"inline\": true },
+                { \"name\": \"Caminho\", \"value\": \"${DEPLOY_PATH}\", \"inline\": false }
+              ],
+              \"timestamp\": \"$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")\"
+            }]
+          }" \
+          $DISCORD_WEBHOOK
+      EOF
+    - echo "🎉 Deploy concluído no servidor ${DEPLOY_SERVER}!"
+
+  only:
+    - main  # Garantir que o deploy só ocorra na branch 'main'
+  except:
+    - dev  # Ignorar execução do pipeline na branch 'dev'
