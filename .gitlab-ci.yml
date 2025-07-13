@@ -4,6 +4,7 @@ variables:
   SSH_PRIVATE_KEY: ${SSH_PRIVATE_KEY}
   DEPLOY_USER: ${DEPLOY_USER}
   DEPLOY_SERVER: ${DEPLOY_SERVER}
+  DEPLOY_SERVER_PORT: ${DEPLOY_SERVER_PORT} 
   DEPLOY_PATH: ${DEPLOY_PATH}
   DISCORD_WEBHOOK: ${DISCORD_WEBHOOK}
 
@@ -21,7 +22,7 @@ deploy:
   script:
     - echo "🚀 Iniciando o deploy para $DEPLOY_SERVER..."
     - |
-      ssh $DEPLOY_USER@$DEPLOY_SERVER << EOF
+      ssh $DEPLOY_USER@$DEPLOY_SERVER -p ${DEPLOY_SERVER_PORT} << EOF
         set -e
         cd ${DEPLOY_PATH} || exit 1
         echo \${PWD}
