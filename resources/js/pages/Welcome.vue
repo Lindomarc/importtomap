@@ -9,9 +9,17 @@ import GoogleMap from '../components/GoogleMap.vue';
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
-    <div class="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
-        <header class="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
-            <nav class="flex items-center justify-end gap-4">
+    <div class="flex min-h-screen flex-col  bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
+        <header class="">
+       
+        </header> 
+
+        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+            <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
+                <GoogleMap />
+            </div>
+        </div>
+        <nav class="flex items-center justify-end gap-4">
                 <Link
                     v-if="$page.props.auth.user"
                     :href="route('dashboard')"
@@ -26,18 +34,13 @@ import GoogleMap from '../components/GoogleMap.vue';
                     >
                         Log in
                     </Link>
-                    <Link
+                    <!-- <Link
                         :href="route('register')"
                         class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                     >
                         Register
-                    </Link>
+                    </Link> -->
                 </template>
             </nav>
-        </header>
-        <div class="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
-            <GoogleMap />
-        </div>
-        <div class="hidden h-14.5 lg:block"></div>
     </div>
 </template>

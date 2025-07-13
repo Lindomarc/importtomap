@@ -5,6 +5,9 @@ use App\Http\Controllers\Api\CampanhaController;
 // Rota para listar todas as campanhas
 Route::get('/campanhas', [CampanhaController::class, 'index']);
 
+// Rota para listar todas as campanhas
+Route::get('/campanhas/list', [CampanhaController::class, 'list']);
+
 // Rota alternativa com filtros (opcional)
 Route::get('/campanhas/search', [CampanhaController::class, 'indexWithFilters']);
 

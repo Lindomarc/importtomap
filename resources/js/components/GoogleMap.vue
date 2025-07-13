@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md">
-    <div class="relative" style="height: calc(100vh - 130px)">
+    <div class="relative" style="height: calc(100vh - 120px)">
       <!-- Sidebar -->
       <div
         :class="[
@@ -114,22 +114,17 @@
         style="width: 100%; height: 100%"
         :center="mapCenter"
         :zoom="zoom"
-        :fullscreen-control="true"
-        :zoom-control="true"
-        :scale-control="true"
+        :fullscreen-control="false"
+        :zoom-control="false"
+        :scale-control="false"
         :street-view-control="false"
         :rotate-control="false"
         :map-type-id="selectedMap"
         :map-type-control="true"
         gesture-handling="greedy"
       >
-        <MarkerPlacas
-        @marker-clicked="handleMarkerClick"
-         />
-        <MarkerCity
-        @marker-clicked="handleMarkerClick"
-         />
-      
+        <MarkerPlacas @marker-clicked="handleMarkerClick" />
+        <MarkerCity @marker-clicked="handleMarkerClick" />
       </GoogleMap>
     </div>
   </div>
@@ -143,51 +138,14 @@ import MarkerCity from "./MarkerCity.vue";
 
 const selectedMap = ref("satellite");
 const mapCenter = ref({
-  lat: -25.424,
-  lng: -49.273,
+  lat: -24.7461133,
+  lng: -51.7733505,
 });
 const zoom = ref(8); // Zoom menor para ver as 3 cidades
 
 const apiKey =
   import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyCCBRQh6dU4DSd1kRrXeM5w0oYAnGa9vvs";
 
-// Lista de cidades
-const cities = ref([
-  {
-    name: "Curitiba",
-    position: { lat: -25.424, lng: -49.273 },
-    info: "Capital do Paraná",
-  },
-  {
-    name: "Londrina",
-    position: { lat: -23.311, lng: -51.169 },
-    info: "Cidade do Norte do Paraná",
-  },
-  {
-    name: "Maringá",
-    position: { lat: -23.425, lng: -51.936 },
-    info: "Cidade Canção",
-  },
-]);
-
-// Pontos de interesse em Curitiba (marcadores azuis)
-const placasPoints = [
-    {
-        "name": "PR 364 - Laranjeiras do Sul",
-        "info": "Painel 12,00 x 5,00",
-        "position": { "lat": -25.3944242, "lng": -51.5285082 }
-    },
-    {
-        "name": "PR-466 - Pitanga",
-        "info": "Painel 8,00 x 4,00",
-        "position": { "lat": -24.7461133, "lng": -51.7733505 }
-    },
-    {
-        "name": "PR-092 - Contorno de Andirá",
-        "info": "Painel 9,00 x 3,00",
-        "position": { "lat": -23.0615683, "lng": -50.2370097 }
-    },
-];
 // Controle da Drawer
 const sidebarOpen = ref(false);
 
@@ -197,19 +155,19 @@ const selectedLocation = ref<{
   position: { lat: number; lng: number };
 } | null>(null);
 
-
 function closeSidebar() {
   sidebarOpen.value = false;
 }
- 
+
 const googleMapRef = ref();
 
-
 // Função para lidar com o clique no marcador
-const handleMarkerClick = (item: { name: string; info: string; position: { lat: number; lng: number; }; } ) => {
+const handleMarkerClick = (item: {
+  name: string;
+  info: string;
+  position: { lat: number; lng: number };
+}) => {
   selectedLocation.value = item; // Atualiza o estado com a placa clicada
   sidebarOpen.value = true;
-
 };
-
 </script>

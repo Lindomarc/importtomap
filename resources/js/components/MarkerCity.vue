@@ -10,29 +10,59 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { Marker } from "vue3-google-map";
 
-// Lista de cidades
-const cities = [
-  {
-    name: "Curitiba",
-    position: { lat: -25.424, lng: -49.273 },
-    info: "Capital do Paraná",
-    color: "red",
-  },
-  {
-    name: "Londrina",
-    position: { lat: -23.311, lng: -51.169 },
-    info: "Cidade do Norte do Paraná",
-    color: "red",
-  },
-  {
-    name: "Maringá",
-    position: { lat: -23.425, lng: -51.936 },
-    info: "Cidade Canção",
-    color: "red",
-  },
-];
+// Estado reativo para as cidades
+const cities = ref([]);
+
+// Função para buscar dados da API
+const fetchCities = async () => {
+  try {
+    const response = await fetch('/api/campanhas/list');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    
+    // Mapear os dados da API para o formato esperado
+    cities.value = result.data.map((campanha, index) => ({
+      id: campanha.id || index + 1,
+      name: campanha.name,
+      position: {
+        lat: parseFloat(campanha.lat),
+        lng: parseFloat(campanha.lng)
+      },
+      info: campanha.info,
+      color: campanha.color,
+      // Incluir dados originais da campanha
+      campanha: campanha
+    }));
+  } catch (error) {
+    console.error('Erro ao buscar campanhas:', error);
+    // Fallback para dados estáticos em caso de erro
+    cities.value = [
+      {
+        name: "Curitiba",
+        position: { lat: -25.424, lng: -49.273 },
+        info: "Capital do Paraná",
+        color: "red",
+      },
+      {
+        name: "Londrina",
+        position: { lat: -23.311, lng: -51.169 },
+        info: "Cidade do Norte do Paraná",
+        color: "red",
+      },
+      {
+        name: "Maringá",
+        position: { lat: -23.425, lng: -51.936 },
+        info: "Cidade Canção",
+        color: "red",
+      },
+    ];
+  }
+};
 
 // Função para criar o SVG customizado
 const createCustomSVG = (color = "#2563eb", text = "P") => {
@@ -87,7 +117,7 @@ const getMarkerOptions = (city) => {
     title: city.name,
     clickable: true,
     icon: {
-      url: createCustomSVG(city.color, "C"),
+      url: createCustomSVG(city.color, city.name.charAt(0).toUpperCase()),
     },
   };
 
@@ -99,6 +129,16 @@ const openDrawer = (city) => {
   console.log("city clicada:", city);
   // Sua lógica para abrir o drawer
 };
+
+// Buscar dados da API quando o componente for montado
+onMounted(() => {
+  fetchCities();
+});
+
+// Expor função para permitir recarregar dados externamente
+defineExpose({
+  fetchCities
+});
 </script>
 
 <style>

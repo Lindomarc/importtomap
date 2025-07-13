@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Define o tamanho padrão máximo para strings como 191
+        Schema::defaultStringLength(191);
+        
     }
 }

@@ -33,13 +33,7 @@ class CityService
         $coordinates = $this->fetchCoordinatesFromAPI($cityName, $state);
         
         if ($coordinates) {
-            Log::info('coordinates', [[
-                'name' => $cityName,
-                'state' => $state,
-                'lat' => $coordinates['lat'],
-                'lng' => $coordinates['lng']
-            ]]);
-    
+   
             return City::create([
                 'name' => $cityName,
                 'state' => $state,

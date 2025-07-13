@@ -8,6 +8,26 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Http\Controllers\Controller;
 class CampanhaController extends Controller
 {
+
+    public function list(){
+        $items = Campanha::all();
+        $data= [];
+        foreach ($items as $item) {
+            if ($item->lat && $item->lng){
+                $data[] = [
+                    'name' => $item->veiculo,
+                    'info' => $item->campanha,
+                    'lat' => $item->lat,
+                    'lng' => $item->lng,
+                    'color' =>  "blue",
+                ];
+            }
+        }
+        
+        return response()->json([
+            'data' => $data
+        ], 200);
+    }
     /**
      * Método para listar todas as campanhas com paginação
      */
