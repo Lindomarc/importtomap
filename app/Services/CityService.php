@@ -21,7 +21,7 @@ class CityService
         $state = trim($parts[1]);
         
         // Busca na tabela local primeiro
-        $city = City::where('city', $cityName)
+        $city = City::where('name', $cityName)
                       ->where('state', $state)
                       ->first();
         
