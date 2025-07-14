@@ -17,9 +17,7 @@ return new class extends Migration
             $table->string('state', 2);
             $table->decimal('lat', 10, 8);
             $table->decimal('lng', 11, 8);
-            $table->timestamps();
-            
-            $table->unique(['name', 'states']);
+            $table->timestamps();    
         });
     }
 
