@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class City extends Model
+class Address extends Model
 {
     protected $fillable = [
-        'name',
         'state',
+        'city',
+        'street',
+        'cep',
         'lat',
         'lng'
     ];
 
     protected $casts = [
-        'lat' => 'decimal:8',
-        'lng' => 'decimal:8'
+        'lat' => 'decimal:11',
+        'lng' => 'decimal:11'
     ];
 }

@@ -5,11 +5,11 @@ use Inertia\Inertia;
 use App\Http\Controllers\ImportController;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+    return Inertia::render('Map');
+})->middleware(['auth', 'verified'])->name('home');
 
 Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Map');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('map', function () {

@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('campanhas', function (Blueprint $table) {
             $table->id();
-            $table->string('campanha')->nullable();
-            $table->string('cliente')->nullable();
-            $table->string('veiculo')->nullable();
-            $table->string('meio')->nullable();
-            $table->string('praca')->nullable();
+            $table->bigInteger('address_id')->nullable();
+            $table->string('name')->nullable();
+            $table->string('info')->nullable();
+            $table->string('type')->nullable();
+            $table->string('color')->nullable();
             $table->string('lat')->nullable();
             $table->string('lng')->nullable();
             $table->timestamps();

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\Campanha;
-use App\Services\CityService;
+use App\Services\AddressService;
 use Illuminate\Support\Facades\Log;
 
 class ImportController extends Controller
@@ -13,7 +13,7 @@ class ImportController extends Controller
 
     private $cidadeService;
     
-    public function __construct(CityService  $cidadeService)
+    public function __construct(AddressService  $cidadeService)
     {
         $this->cidadeService = $cidadeService;
     }
@@ -38,31 +38,41 @@ class ImportController extends Controller
 
             $sucessos = 0;
             $erros = [];
+            $colors = [
+                'emissoras' => 'green',
+                'placas' => 'red',
+                'portais' => 'blue'
+            ];
 
             foreach ($rows as $index => $row) {
                 try {
-                    $cidadeId = null;
                     $data = [
-                        'campanha' => $row[0] ?? null,
-                        'cliente' => $row[1] ?? null,
-                        'veiculo' => $row[2] ?? null,
-                        'meio' => $row[3] ?? null,
-                        'praca' => $row[4] ?? null,
+                        'name' => $row[0] ?? null,
+                        'info' => $row[1] ?? null,
+                        'city' => $row[2] ?? null,
+                        'state' => $row[3] ?? null,
+                        'street' => $row[4] ?? null,
+                        'number' => $row[5] ?? null,
+                        'cep' => $row[6] ?? null,
                     ];
+
                     // Processa o campo 'meio' para extrair cidade
-                    if (!empty($row[4])) {
-                        $cidade = $this->cidadeService->findOrCreateCity($row[4]);
-                        $cidadeId = $cidade ? $cidade->id : null;
-                        $data['lat'] = $cidade ? $cidade->lat : null;
-                        $data['lng'] = $cidade ? $cidade->lng : null;
+                    $address = $this->cidadeService->findOrCreateAddress($data);
+                    $data['address_id'] = $address ? $address->id : null;
+                    $data['lat'] = $address ? $address->lat : null;
+                    $data['lng'] = $address ? $address->lng : null;
+                    $data['type'] = $request->input('type');
+                    $data['color'] = $colors[$data['type']];
+                    if($data['name']  && $data['info']){
+                        Campanha::create($data);
+                        $sucessos++;
+                    
                     }
                     
-                    Campanha::create($data);
-                    
-                    $sucessos++;
                     
                 } catch (\Exception $e) {
                     $erros[] = "Linha " . ($index + 1) . ": " . $e->getMessage();
+                    Log::info("errors",[$erros]);
                 }
             }
 

@@ -158,7 +158,9 @@ const errors = ref<Record<string, string>>({});
 
 // Import types options
 const importTypes: ImportType[] = [
-  { label: 'Campanhas', value: 'campanhas' }
+  { label: 'Emissoras', value: 'emissoras' },
+  { label: 'Placas', value: 'placas' },
+  { label: 'Portais', value: 'portais' },
 ];
 
 // File handling

@@ -10,11 +10,11 @@ class Campanha extends Model
     use HasFactory;
 
     protected $fillable = [
-        'campanha',
-        'cliente',
-        'veiculo',
-        'meio',
-        'praca',
+        'address_id',
+        'name',
+        'info',
+        'type',
+        'color', 
         'lat',
         'lng'
     ];

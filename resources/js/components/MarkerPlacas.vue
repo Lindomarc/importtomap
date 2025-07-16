@@ -60,23 +60,7 @@
   };
   
   // Lista de cidades
-const placas = [
-    {
-        "name": "PR 364 - Laranjeiras do Sul",
-        "info": "Painel 12,00 x 5,00",
-        "position": { "lat": -25.3944242, "lng": -51.5285082 }
-    },
-    {
-        "name": "PR-466 - Pitanga",
-        "info": "Painel 8,00 x 4,00",
-        "position": { "lat": -24.7461133, "lng": -51.7733505 }
-    },
-    {
-        "name": "PR-092 - Contorno de Andirá",
-        "info": "Painel 9,00 x 3,00",
-        "position": { "lat": -23.0615683, "lng": -50.2370097 }
-    },
-];
+const placas = [];
 
   
   // Função para obter as opções do marcador

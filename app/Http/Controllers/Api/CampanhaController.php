@@ -15,11 +15,11 @@ class CampanhaController extends Controller
         foreach ($items as $item) {
             if ($item->lat && $item->lng){
                 $data[] = [
-                    'name' => $item->veiculo,
-                    'info' => $item->campanha,
+                    'name' => $item->name,
+                    'info' => $item->info,
+                    'color' =>  $item->color,
                     'lat' => $item->lat,
                     'lng' => $item->lng,
-                    'color' =>  "blue",
                 ];
             }
         }
@@ -73,9 +73,9 @@ class CampanhaController extends Controller
             'page' => 'integer|min:1',
             'per_page' => 'integer|min:1|max:100',
             'search' => 'string|max:255',
-            'cliente' => 'string|max:255',
-            'veiculo' => 'string|max:255',
-            'meio' => 'string|max:255',
+            'name' => 'string|max:255',
+            'info' => 'string|max:255',
+            'type' => 'string|max:255',
             'lat' => 'string|max:255',
             'lng' => 'string|max:255'
         ]);
@@ -84,10 +84,10 @@ class CampanhaController extends Controller
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
         $search = $request->input('search');
-        $cliente = $request->input('cliente');
-        $veiculo = $request->input('veiculo');
-        $meio = $request->input('meio');
-        $meio = $request->input('lat');
+        $name = $request->input('name');
+        $type = $request->input('type');
+        $info = $request->input('info');
+        $lat = $request->input('lat');
         $lng= $request->input('lng');
 
         // Construir query com filtros
@@ -96,25 +96,10 @@ class CampanhaController extends Controller
         // Filtro de busca geral
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('campanha', 'LIKE', "%{$search}%")
-                  ->orWhere('cliente', 'LIKE', "%{$search}%")
-                  ->orWhere('veiculo', 'LIKE', "%{$search}%")
-                  ->orWhere('meio', 'LIKE', "%{$search}%")
-                  ->orWhere('praca', 'LIKE', "%{$search}%");
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('info', 'LIKE', "%{$search}%")
+                  ->orWhere('type', 'LIKE', "%{$search}%");
             });
-        }
-
-        // Filtros específicos
-        if ($cliente) {
-            $query->where('cliente', 'LIKE', "%{$cliente}%");
-        }
-
-        if ($veiculo) {
-            $query->where('veiculo', 'LIKE', "%{$veiculo}%");
-        }
-
-        if ($meio) {
-            $query->where('meio', 'LIKE', "%{$meio}%");
         }
 
         // Ordenar e paginar
@@ -136,45 +121,13 @@ class CampanhaController extends Controller
             'prev_page_url' => $campanhas->previousPageUrl(),
             'filters' => [
                 'search' => $search,
-                'cliente' => $cliente,
-                'veiculo' => $veiculo,
-                'meio' => $meio
+                'name' => $name,
+                'info' => $info,
+                'type' => $type
             ]
         ]);
     }
     
-    // Método para importar campanhas a partir de uma planilha
-    public function importar(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,csv',
-        ]);
-
-        try {
-            $file = $request->file('file');
-            $spreadsheet = IOFactory::load($file->getPathname());
-            $sheet = $spreadsheet->getActiveSheet();
-
-            // Itera sobre as linhas da planilha (ignorando o cabeçalho)
-            $rows = $sheet->toArray();
-            unset($rows[0]); // Remove a primeira linha (cabeçalho)
-
-            foreach ($rows as $row) {
-                Campanha::create([
-                    'campanha' => $row[0] ?? null,
-                    'cliente' => $row[1] ?? null,
-                    'veiculo' => $row[2] ?? null,
-                    'meio' => $row[3] ?? null,
-                    'praca' => $row[4] ?? null,
-                ]);
-            }
-
-            return response()->json(['message' => 'Planilha importada com sucesso!'], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao importar planilha: ' . $e->getMessage()], 500);
-        }
-    }
-
    /**
      * Atualizar uma campanha específica
      */

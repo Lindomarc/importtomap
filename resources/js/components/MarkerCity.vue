@@ -23,12 +23,13 @@ const fetchCities = async () => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+
     const result = await response.json();
-    
     // Mapear os dados da API para o formato esperado
     cities.value = result.data.map((campanha, index) => ({
       id: campanha.id || index + 1,
       name: campanha.name,
+      type: campanha.type,
       position: {
         lat: parseFloat(campanha.lat),
         lng: parseFloat(campanha.lng)
@@ -41,31 +42,22 @@ const fetchCities = async () => {
   } catch (error) {
     console.error('Erro ao buscar campanhas:', error);
     // Fallback para dados estáticos em caso de erro
-    cities.value = [
-      {
-        name: "Curitiba",
-        position: { lat: -25.424, lng: -49.273 },
-        info: "Capital do Paraná",
-        color: "red",
-      },
-      {
-        name: "Londrina",
-        position: { lat: -23.311, lng: -51.169 },
-        info: "Cidade do Norte do Paraná",
-        color: "red",
-      },
-      {
-        name: "Maringá",
-        position: { lat: -23.425, lng: -51.936 },
-        info: "Cidade Canção",
-        color: "red",
-      },
-    ];
+    cities.value = [];
   }
 };
 
 // Função para criar o SVG customizado
-const createCustomSVG = (color = "#2563eb", text = "P") => {
+const createCustomSVG = (color = "#2563eb", type = "placas") => {
+    // Define o tipo da campanha e o mapeamento correspondente
+const typeMapping = {
+  radios: 'R',
+  placas: 'P',
+  portais: 'N',
+};
+
+// Obtém o valor de $txt com base no tipo da campanha
+const text = typeMapping[type] || ''; // Caso o tipo não esteja no mapeamento, retorna uma string vazia
+
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
         <!-- Sombra do marcador -->
@@ -82,7 +74,7 @@ const createCustomSVG = (color = "#2563eb", text = "P") => {
         
         <!-- Texto ou ícone no centro -->
         <text x="16" y="16" text-anchor="middle" fill="${color}" 
-              font-family="Arial, sans-serif" font-size="8" font-weight="bold">${text}</text>
+              font-family="Arial, sans-serif" font-size="8" font-weight="bold"></text>
       </svg>
     `)}`;
 };
@@ -117,7 +109,7 @@ const getMarkerOptions = (city) => {
     title: city.name,
     clickable: true,
     icon: {
-      url: createCustomSVG(city.color, city.name.charAt(0).toUpperCase()),
+      url: createCustomSVG(city.color, city.type),
     },
   };
 

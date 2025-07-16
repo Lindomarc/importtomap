@@ -11,7 +11,7 @@
         <!-- Header do Sidebar -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-800">
-            {{ selectedLocation?.type === "city" ? "Cidade" : "Placa" }}
+            {{ selectedLocation}}
           </h2>
           <button
             @click="closeSidebar"
@@ -92,15 +92,10 @@
           </div>
 
           <div class="mt-6 pt-4 border-t border-gray-200">
-            <div
-              :class="[
-                'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
-                selectedLocation.type === 'city'
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-blue-100 text-blue-800',
-              ]"
+            <div v-if="selectedLocation.type === 'portais'"
+              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
             >
-              {{ selectedLocation.type === "city" ? "🏙️ Cidade" : "📍 Placa" }}
+              Portal de Notícias
             </div>
           </div>
         </div>
@@ -138,7 +133,7 @@
 
       <GoogleMap
         ref="googleMapRef"
-        map-id="a420e6da45f406eaaf73b3d6"
+        map-id="e73daaa552348451662ec44b"
         :api-key="apiKey"
         :libraries="['visualization', 'marker', 'geometry']"
         style="width: 100%; height: 100%"
@@ -157,7 +152,7 @@
         @click="onMapClick"
         @idle="onMapIdle"
       >
-        <MarkerPlacas @marker-clicked="handleMarkerClick" />
+        <!-- <MarkerPlacas @marker-clicked="handleMarkerClick" /> -->
         <MarkerCity @marker-clicked="handleMarkerClick" />
       </GoogleMap>
     </div>

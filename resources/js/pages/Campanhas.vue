@@ -20,11 +20,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Define a interface para os dados da campanha
 interface Campanha {
     id: number;
-    campanha: string | null;
-    cliente: string | null;
-    veiculo: string | null;
-    meio: string | null;
-    praca: string | null;
+    name: string | null;
+    info: string | null;
+    type: string | null;
+    color: string | null;
     lat: string | null;
     lng: string | null;
 }
@@ -112,7 +111,7 @@ const deleteCampanha = async (id: number) => {
         }
         
     } catch (error) {
-        console.error("Erro ao deletar campanha:", error);
+        console.error("Erro ao deletar name:", error);
         alert("Erro ao deletar campanha. Tente novamente.");
     } finally {
         isLoading.value = false;
@@ -125,6 +124,7 @@ const fetchCampanhas = async (page: number = 1, perPage: number = 10) => {
         isLoading.value = true;
         const response = await axios.get(`/api/campanhas?page=${page}&per_page=${perPage}`);
         paginationData.value = response.data;
+        console.log(paginationData.value )
     } catch (error) {
         console.error("Erro ao buscar campanhas:", error);
     } finally {
@@ -208,11 +208,9 @@ onMounted(() => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Campanha</TableHead>
-                            <TableHead>Cliente</TableHead>
-                            <TableHead>Veículo</TableHead>
-                            <TableHead>Meio</TableHead>
-                            <TableHead>Praça</TableHead>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Descrição</TableHead>
+                            <TableHead>tipo</TableHead>
                             <TableHead>LAT</TableHead>
                             <TableHead>LNG</TableHead>
                             <TableHead class="w-24">Ações</TableHead>
@@ -233,11 +231,9 @@ onMounted(() => {
                             </TableCell>
                         </TableRow>
                         <TableRow v-else v-for="campanha in paginationData.data" :key="campanha.id">
-                            <TableCell>{{ campanha.campanha }}</TableCell>
-                            <TableCell>{{ campanha.cliente }}</TableCell>
-                            <TableCell>{{ campanha.veiculo }}</TableCell>
-                            <TableCell>{{ campanha.meio }}</TableCell>
-                            <TableCell>{{ campanha.praca }}</TableCell>
+                            <TableCell>{{ campanha.name }}</TableCell>
+                            <TableCell>{{ campanha.info }}</TableCell>
+                            <TableCell>{{ campanha.type }}</TableCell>
                             
                             <!-- Campo LAT editável -->
                             <TableCell>
