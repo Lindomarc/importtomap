@@ -112,7 +112,8 @@ class AddressService
             
         } catch (\Exception $e) {
             \Log::error("Erro ao buscar coordenadas para endereço '$address': " . $e->getMessage());
-            return null;
         }
+        return [];
+
     }
 }

@@ -11,7 +11,7 @@
         <!-- Header do Sidebar -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-800">
-            {{ selectedLocation}}
+            Detalhes
           </h2>
           <button
             @click="closeSidebar"

@@ -38,9 +38,10 @@ deploy:
         echo "🛠️ Realizando o build do Vue3..."
         npm run build || exit 1
         echo "🧹 Limpando e otimizando caches..."
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
+        php artisan cache:clear
+        php artisan config:clear
+        php artisan route:clear
+        php artisan view:clear
         echo "✅ Deploy concluído com sucesso!"
         echo "Enviando notificação para o Discord..."
         curl -X POST \

@@ -18,6 +18,7 @@ class CampanhaController extends Controller
                     'name' => $item->name,
                     'info' => $item->info,
                     'color' =>  $item->color,
+                    'type' =>  $item->type,
                     'lat' => $item->lat,
                     'lng' => $item->lng,
                 ];

@@ -10,7 +10,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from "vue";
 import { Marker } from "vue3-google-map";
 
 // Estado reativo para as cidades
@@ -19,7 +19,7 @@ const cities = ref([]);
 // Função para buscar dados da API
 const fetchCities = async () => {
   try {
-    const response = await fetch('/api/campanhas/list');
+    const response = await fetch("/api/campanhas/list");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -32,15 +32,15 @@ const fetchCities = async () => {
       type: campanha.type,
       position: {
         lat: parseFloat(campanha.lat),
-        lng: parseFloat(campanha.lng)
+        lng: parseFloat(campanha.lng),
       },
       info: campanha.info,
       color: campanha.color,
       // Incluir dados originais da campanha
-      campanha: campanha
+      campanha: campanha,
     }));
   } catch (error) {
-    console.error('Erro ao buscar campanhas:', error);
+    console.error("Erro ao buscar campanhas:", error);
     // Fallback para dados estáticos em caso de erro
     cities.value = [];
   }
@@ -48,15 +48,15 @@ const fetchCities = async () => {
 
 // Função para criar o SVG customizado
 const createCustomSVG = (color = "#2563eb", type = "placas") => {
-    // Define o tipo da campanha e o mapeamento correspondente
-const typeMapping = {
-  radios: 'R',
-  placas: 'P',
-  portais: 'N',
-};
+  // Define o tipo da campanha e o mapeamento correspondente
+  const typeMapping = {
+    radios: "R",
+    placas: "P",
+    portais: "N",
+  };
 
-// Obtém o valor de $txt com base no tipo da campanha
-const text = typeMapping[type] || ''; // Caso o tipo não esteja no mapeamento, retorna uma string vazia
+  // Obtém o valor de $txt com base no tipo da campanha
+  const text = typeMapping[type] || ""; // Caso o tipo não esteja no mapeamento, retorna uma string vazia
 
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
@@ -104,6 +104,7 @@ const createCityIcon = (number) => {
 
 // Função para obter as opções do marcador
 const getMarkerOptions = (city) => {
+  console.log(city.campanha);
   const baseOptions = {
     position: city.position,
     title: city.name,
@@ -129,7 +130,7 @@ onMounted(() => {
 
 // Expor função para permitir recarregar dados externamente
 defineExpose({
-  fetchCities
+  fetchCities,
 });
 </script>
 
