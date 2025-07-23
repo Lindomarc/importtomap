@@ -9,34 +9,60 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
+import axios from "axios"; // Importando Axios
 import { Marker } from "vue3-google-map";
 
+// Definição das propriedades (props)
+const props = defineProps({
+  importId: {
+    type: String,
+    default: null,
+  },
+});
+
+// Tipagem para os dados da cidade
+interface City {
+  id: number;
+  name: string;
+  type: string;
+  total_liquido: number;
+  position: {
+    lat: number;
+    lng: number;
+  };
+  info: string;
+  color: string;
+  campanha: Record<string, any>; // Pode ser substituído por uma interface específica se necessário
+}
+
 // Estado reativo para as cidades
-const cities = ref([]);
+const cities = ref<City[]>([]);
 
-// Função para buscar dados da API
-const fetchCities = async () => {
+// Função para buscar dados da API usando Axios
+const fetchCities = async (): Promise<void> => {
   try {
-    const response = await fetch("/api/campanhas/list");
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    const response = await axios.get("/api/campanhas/list", {
+      params: {
+        import_id: props.importId, // Passando o importId como parâmetro import_id
+      },
+    });
+    
+    const result = response.data;
 
-    const result = await response.json();
     // Mapear os dados da API para o formato esperado
-    cities.value = result.data.map((campanha, index) => ({
+    cities.value = result.data.map((campanha: any, index: number): City => ({
       id: campanha.id || index + 1,
       name: campanha.name,
       type: campanha.type,
+      total_liquido: campanha.total_liquido,
       position: {
         lat: parseFloat(campanha.lat),
         lng: parseFloat(campanha.lng),
       },
       info: campanha.info,
       color: campanha.color,
-      // Incluir dados originais da campanha
       campanha: campanha,
     }));
   } catch (error) {
@@ -47,16 +73,16 @@ const fetchCities = async () => {
 };
 
 // Função para criar o SVG customizado
-const createCustomSVG = (color = "#2563eb", type = "placas") => {
+const createCustomSVG = (color: string = "#2563eb", type: string = "placas"): string => {
   // Define o tipo da campanha e o mapeamento correspondente
-  const typeMapping = {
+  const typeMapping: Record<string, string> = {
     radios: "R",
     placas: "P",
     portais: "N",
   };
 
-  // Obtém o valor de $txt com base no tipo da campanha
-  const text = typeMapping[type] || ""; // Caso o tipo não esteja no mapeamento, retorna uma string vazia
+  // Obtém o valor de text com base no tipo da campanha
+  const text: string = typeMapping[type] || ""; // Caso o tipo não esteja no mapeamento, retorna uma string vazia
 
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
@@ -74,37 +100,13 @@ const createCustomSVG = (color = "#2563eb", type = "placas") => {
         
         <!-- Texto ou ícone no centro -->
         <text x="16" y="16" text-anchor="middle" fill="${color}" 
-              font-family="Arial, sans-serif" font-size="8" font-weight="bold"></text>
-      </svg>
-    `)}`;
-};
-
-// Função para criar ícone de cidade
-const createCityIcon = (number) => {
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
-        <!-- Sombra -->
-        <ellipse cx="16" cy="40" rx="8" ry="2" fill="#000000" opacity="0.2"/>
-        
-        <!-- Corpo do marcador -->
-        <path d="M16 2 C10.48 2 6 6.48 6 12 C6 18 16 38 16 38 C16 38 26 18 26 12 C26 6.48 21.52 2 16 2 Z" 
-              fill="#dc2626" 
-              stroke="#ffffff" 
-              stroke-width="2"/>
-        
-        <!-- Círculo interno -->
-        <circle cx="16" cy="12" r="6" fill="#ffffff" opacity="0.9"/>
-        
-        <!-- Número -->
-        <text x="16" y="16" text-anchor="middle" fill="#dc2626" 
-              font-family="Arial, sans-serif" font-size="8" font-weight="bold">${number}</text>
+              font-family="Arial, sans-serif" font-size="8" font-weight="bold">${text}</text>
       </svg>
     `)}`;
 };
 
 // Função para obter as opções do marcador
-const getMarkerOptions = (city) => {
-  console.log(city.campanha);
+const getMarkerOptions = (city: City) => {
   const baseOptions = {
     position: city.position,
     title: city.name,
@@ -115,12 +117,6 @@ const getMarkerOptions = (city) => {
   };
 
   return baseOptions;
-};
-
-// Função para abrir o drawer
-const openDrawer = (city) => {
-  console.log("city clicada:", city);
-  // Sua lógica para abrir o drawer
 };
 
 // Buscar dados da API quando o componente for montado

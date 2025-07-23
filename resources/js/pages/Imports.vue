@@ -3,7 +3,10 @@
     <Head title="Importações" />
 
     <div class="flex flex-col space-y-6 max-w-2xl mx-auto">
-      <HeadingSmall title="Importar Planilha" description="Faça upload de arquivos para importar dados no sistema" />
+      <HeadingSmall
+        title="Importar Planilha"
+        description="Faça upload de arquivos para importar dados no sistema"
+      />
 
       <form @submit.prevent="onSubmit" class="space-y-6">
         <!-- Tipo de Importação -->
@@ -16,8 +19,8 @@
             required
           >
             <option value="" disabled>Selecione o tipo de importação</option>
-            <option 
-              v-for="option in importTypes" 
+            <option
+              v-for="option in importTypes"
               :key="option.value"
               :value="option.value"
             >
@@ -49,7 +52,10 @@
               ✕
             </Button>
           </div>
-          <div v-if="selectedFile" class="flex items-center gap-2 text-sm text-muted-foreground">
+          <div
+            v-if="selectedFile"
+            class="flex items-center gap-2 text-sm text-muted-foreground"
+          >
             <span>📄</span>
             <span>{{ selectedFile.name }}</span>
             <span class="text-xs">({{ formatFileSize(selectedFile.size) }})</span>
@@ -62,7 +68,7 @@
           <Button :disabled="loading" type="submit">
             <span v-if="!loading">📤</span>
             <span v-else class="animate-spin">⏳</span>
-            <span class="ml-2">{{ loading ? 'Importando...' : 'Importar' }}</span>
+            <span class="ml-2">{{ loading ? "Importando..." : "Importar" }}</span>
           </Button>
 
           <Button
@@ -89,12 +95,12 @@
 
         <!-- Mensagem de Resultado -->
         <div v-if="message" class="mt-4">
-          <div 
+          <div
             :class="[
               'rounded-lg p-4 text-sm',
-              messageType === 'success' 
-                ? 'bg-green-50 text-green-800 border border-green-200' 
-                : 'bg-red-50 text-red-800 border border-red-200'
+              messageType === 'success'
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200',
             ]"
           >
             <div class="flex items-center gap-2">
@@ -123,6 +129,7 @@
 import { Head } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import axios from 'axios';
+import { notify } from '@kyvg/vue3-notification'
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -131,7 +138,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 // Removido: Select components não disponíveis
- 
+
 import { type BreadcrumbItem } from '@/types';
 
 interface ImportType {
@@ -155,7 +162,6 @@ const message = ref<string>('');
 const messageType = ref<'success' | 'error'>('success');
 const recentlySuccessful = ref<boolean>(false);
 const errors = ref<Record<string, string>>({});
-
 // Import types options
 const importTypes: ImportType[] = [
   { label: 'Emissoras', value: 'emissoras' },
@@ -197,17 +203,17 @@ const formatFileSize = (bytes: number): string => {
 // Form validation
 const validateForm = (): boolean => {
   errors.value = {};
-  
+
   if (!type.value) {
     errors.value.type = 'Selecione um tipo de importação';
   }
-  
+
   if (!selectedFile.value) {
     errors.value.file = 'Selecione um arquivo';
   } else if (selectedFile.value.size > 10 * 1024 * 1024) { // 10MB
     errors.value.file = 'Arquivo muito grande (máximo 10MB)';
   }
-  
+
   return Object.keys(errors.value).length === 0;
 };
 
@@ -218,7 +224,7 @@ const onSubmit = async () => {
   loading.value = true;
   message.value = '';
   recentlySuccessful.value = false;
-  
+
   const formData = new FormData();
   formData.append('type', type.value);
   formData.append('file', selectedFile.value!);
@@ -233,18 +239,18 @@ const onSubmit = async () => {
     message.value = response.data.message || 'Planilha importada com sucesso!';
     messageType.value = 'success';
     recentlySuccessful.value = true;
-    
+
     // Clear form on success
     setTimeout(() => {
       clearForm();
       recentlySuccessful.value = false;
     }, 3000);
-    
+
   } catch (error: any) {
     const errorMessage = error.response?.data?.message || 'Erro ao importar planilha.';
     message.value = errorMessage;
     messageType.value = 'error';
-    
+
     if (error.response?.data?.errors) {
       errors.value = error.response.data.errors;
     }

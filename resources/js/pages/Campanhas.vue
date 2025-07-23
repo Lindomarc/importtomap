@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, defineProps} from "vue";
 import axios from "axios";
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-// import { Trash2, Check, X } from "lucide-react";
+import { Trash2, Check, X } from "lucide-vue-next";
 
+const props = defineProps({
+  importId: {
+    type: String,
+    default: null
+  }
+})
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Campanhas',
-        href: '/campanhas',
+        title: 'Dados',
+        href: '/data',
     },
 ];
 
@@ -122,7 +127,15 @@ const deleteCampanha = async (id: number) => {
 const fetchCampanhas = async (page: number = 1, perPage: number = 10) => {
     try {
         isLoading.value = true;
-        const response = await axios.get(`/api/campanhas?page=${page}&per_page=${perPage}`);
+
+        const response = await axios.get("/api/campanhas", {
+            params: {
+                import_id: props.importId,
+                page: page,
+                per_page: perPage,
+            },
+        });
+    
         paginationData.value = response.data;
         console.log(paginationData.value )
     } catch (error) {

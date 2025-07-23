@@ -43,6 +43,11 @@
               {{ selectedLocation.info }}
             </p>
           </div>
+          <div class="mb-4">
+            <p class="text-gray-600 font-semibold">
+              {{ formatarEmReais(selectedLocation.total_liquido) }}
+            </p>
+          </div>
 
           <div class="space-y-3">
             <div class="flex items-center text-sm text-gray-500">
@@ -130,7 +135,6 @@
           </button>
         </div>
       </div>
-
       <GoogleMap
         ref="googleMapRef"
         map-id="e73daaa552348451662ec44b"
@@ -153,7 +157,10 @@
         @idle="onMapIdle"
       >
         <!-- <MarkerPlacas @marker-clicked="handleMarkerClick" /> -->
-        <MarkerCity @marker-clicked="handleMarkerClick" />
+        <MarkerCity
+          :import-id="importId"
+          @marker-clicked="handleMarkerClick" 
+        />
       </GoogleMap>
     </div>
   </div>
@@ -164,14 +171,18 @@ import { GoogleMap } from "vue3-google-map";
 import { ref, onMounted, nextTick, watch } from "vue";
 import MarkerPlacas from "./MarkerPlacas.vue";
 import MarkerCity from "./MarkerCity.vue";
-
+const props = defineProps({
+  importId: {
+    type: String,
+    default: null
+  }
+})
 const selectedMap = ref<string>("roadmap");
 const googleMapRef = ref<any | null>(null);
 const mapCenter = ref({
   lat: -24.7461133,
   lng: -51.7733505,
 });
-
 const zoom = ref(8);
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -191,6 +202,7 @@ const sidebarOpen = ref(false);
 const selectedLocation = ref<{
   name: string;
   info: string;
+  total_liquido: string;
   position: { lat: number; lng: number };
   type: string;
 } | null>(null);
@@ -203,6 +215,7 @@ function closeSidebar() {
 const handleMarkerClick = (item: {
   name: string;
   info: string;
+  total_liquido: string;
   position: { lat: number; lng: number };
   type: string;
 }) => {
@@ -474,4 +487,25 @@ onMounted(async () => {
     await attemptGeoJsonLoad();
   }
 });
+
+
+function formatarEmReais(valor: number | string): string {
+    // Verifica se o valor é um número válido
+    const valorNumerico = parseFloat(valor as string);
+    if (isNaN(valorNumerico)) {
+        console.error("O valor fornecido não é um número válido.");
+        return "R$ 0,00";
+    }
+
+    // Converte o valor para um número com duas casas decimais
+    const valorFormatadoDecimal = valorNumerico.toFixed(2);
+
+    // Substitui o ponto decimal por vírgula e adiciona separadores de milhar
+    const valorFormatado = valorFormatadoDecimal
+        .replace('.', ',') // Substitui o ponto por vírgula
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Adiciona pontos de milhar
+
+    // Retorna o valor formatado com o símbolo R$
+    return `R$ ${valorFormatado}`;
+}
 </script>

@@ -4,6 +4,12 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import GoogleMap from '../components/GoogleMap.vue';
 
+defineProps({
+  importId: {
+    type: String,
+    default: null
+  }
+})
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Mapa',
@@ -16,9 +22,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto"> 
             <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                <GoogleMap />
+                <GoogleMap :import-id="importId"/>
             </div>
         </div>
     </AppLayout>

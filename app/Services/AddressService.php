@@ -11,27 +11,34 @@ class AddressService
      */
     public function findOrCreateAddress(array $address): ?Address
     {      
-        Log::info('in', $address);
         // Busca na tabela local primeiro
-        $Address = Address::where('cep', $address['cep'])
-                      ->where('number', $address['number'])
-                      ->first();
-        
+        $state = $address['state'] ?? 'PR';
+        $Address = null;
+        if(!!$address['cep'] && !!$address['number']){
+
+            $Address = Address::where('cep', $address['cep'])
+            ->where('number', $address['number'])
+            ->first();
+
+        }
         if ($Address) {
             return $Address;
         }
 
+        if(!!$address['street'] && !!$address['number'])
         $Address = Address::where('street', $address['street'])
         ->where('number', $address['number'])
-        ->where('state', $address['state'])
+        ->where('state', $state)
         ->first();
 
         if ($Address) {
             return $Address;
         }
 
+        if(!!$address['city'])
+
         $Address = Address::where('city', $address['city'])
-        ->where('state', $address['state'])
+        ->where('state', $state)
         ->first();
 
         if ($Address) {
@@ -50,8 +57,8 @@ class AddressService
         if($address['cep']){
             $search .= $address['cep'].', ';
         } 
-        if($address['city'] && $address['state'] ){
-            $search .= $address['city'] . ', '. $address['state'].', ';
+        if($address['city'] && $state ){
+            $search .= $address['city'] . ', '. $state.', ';
         } 
 
         if($search){
@@ -66,7 +73,7 @@ class AddressService
                     'cep' => $address['cep'],
                     'number' => $address['number'],
                     'street' => $address['street'],
-                    'state' => $address['state'],
+                    'state' => $state,
                     'lat' => $coordinates['lat'],
                     'lng' => $coordinates['lng']
                 ]);

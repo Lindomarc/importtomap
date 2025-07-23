@@ -19,23 +19,34 @@ class ImportController extends Controller
     }
     public function index()
     {
+        return view('imports.index');
+    
+    }
+
+    public function upload()
+    {
         return view('imports.upload'); // Exibe o formulário de upload
     }
 
     public function import(Request $request)
     {
+
+        $type = $request->input('type');
+        Log::info('info', [$type]);
         $request->validate([
             'file' => 'required|mimes:xlsx,csv',
         ]);
 
-        try {
+        // try {
             $file = $request->file('file');
             $spreadsheet = IOFactory::load($file->getPathname());
             $sheet = $spreadsheet->getActiveSheet();
 
             $rows = $sheet->toArray();
-            unset($rows[0]); // Remove cabeçalho
-
+            if($type ==='portais'){
+                unset($rows[0],$rows[1]); // Remove cabeçalho
+            }
+           
             $sucessos = 0;
             $erros = [];
             $colors = [
@@ -55,7 +66,7 @@ class ImportController extends Controller
                         'number' => $row[5] ?? null,
                         'cep' => $row[6] ?? null,
                     ];
-
+Log::info('loo',$data);
                     // Processa o campo 'meio' para extrair cidade
                     $address = $this->cidadeService->findOrCreateAddress($data);
                     $data['address_id'] = $address ? $address->id : null;
@@ -83,10 +94,10 @@ class ImportController extends Controller
 
             return response()->json(['message' => $message], 200);
             
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao importar planilha: ' . $e->getMessage()
-            ], 500);
-        }
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'error' => 'Erro ao importar planilha: ' . $e->getMessage()
+        //     ], 500);
+        // }
     }
 }

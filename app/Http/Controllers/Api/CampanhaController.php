@@ -6,25 +6,41 @@ use App\Models\Campanha;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
+
 class CampanhaController extends Controller
 {
 
-    public function list(){
-        $items = Campanha::all();
-        $data= [];
+    public function list(Request $request){
+        
+        // Log::info("message",[$request->all()]);
+        // Verifica se o parâmetro 'import_id' foi passado na requisição
+        if ($request->has('import_id')) {
+            // Se 'import_id' existe, filtra os registros pelo ID da importação
+            $items = Campanha::where('import_id', $request->input('import_id'))->get();
+        } else {
+            // Se 'import_id' não existe, filtra os registros a partir do dia 1 do mês atual
+            $startOfMonth = now()->startOfMonth(); // Obtém o primeiro dia do mês atual
+            $items = Campanha::whereDate('created_at', '>=', $startOfMonth)->get();
+        }
+    
+        // Formata os dados para o retorno
+        $data = [];
         foreach ($items as $item) {
-            if ($item->lat && $item->lng){
+            if ($item->lat && $item->lng) {
                 $data[] = [
                     'name' => $item->name,
                     'info' => $item->info,
-                    'color' =>  $item->color,
-                    'type' =>  $item->type,
+                    'color' => $item->color,
+                    'type' => $item->type,
                     'lat' => $item->lat,
                     'lng' => $item->lng,
+                    'total_liquido' => $item->total_liquido,
                 ];
             }
         }
-        
+    
+        // Retorna os dados em formato JSON
         return response()->json([
             'data' => $data
         ], 200);
@@ -45,9 +61,17 @@ class CampanhaController extends Controller
         $page = $request->input('page', 1);
 
         // Buscar campanhas com paginação
-        $campanhas = Campanha::orderBy('id', 'desc')
+        if ($request->has('import_id')) {
+            $campanhas = Campanha::orderBy('id', 'desc')
+            ->where('import_id', $request->input('import_id'))
             ->paginate($perPage, ['*'], 'page', $page);
 
+        } else {
+            $campanhas = Campanha::orderBy('id', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        }
+        
         // Retornar dados formatados para o frontend
         return response()->json([
             'data' => $campanhas->items(),
@@ -94,15 +118,24 @@ class CampanhaController extends Controller
         // Construir query com filtros
         $query = Campanha::query();
 
-        // Filtro de busca geral
-        if ($search) {
+        if ($request->has('import_id')) {
+            // Se 'import_id' existe, filtra os registros pelo ID da importação
+            // $items = Campanha::orWhere('import_id', $request->input('import_id'))->get();
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('info', 'LIKE', "%{$search}%")
-                  ->orWhere('type', 'LIKE', "%{$search}%");
+                $q->where('import_id', $request->input('import_id'))
+                ->orWhere('info', 'LIKE', "%{$search}%")
+                ->orWhere('type', 'LIKE', "%{$search}%");
             });
+        } else {
+                // Filtro de busca geral
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('info', 'LIKE', "%{$search}%")
+                    ->orWhere('type', 'LIKE', "%{$search}%");
+                });
+            }
         }
-
         // Ordenar e paginar
         $campanhas = $query->orderBy('id', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);

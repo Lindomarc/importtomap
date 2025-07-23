@@ -16,8 +16,8 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Campanhas',
-        href: '/campanhas',
+        title: 'Dados',
+        href: '/data',
         icon: LayoutGrid,
     },
     {
