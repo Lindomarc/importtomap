@@ -15,7 +15,7 @@ class AddTotalLiquidoToCampanhasTable extends Migration
     {
         Schema::table('campanhas', function (Blueprint $table) {
             // Adiciona a coluna total_liquido
-            $table->decimal('total_liquido', 10, 2)->nullable()->after('upload_id');
+            $table->decimal('total_liquido', 10, 2)->nullable()->after('import_id');
         });
     }
 
