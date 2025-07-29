@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Http\JsonResponse;
 class CampanhaController extends Controller
 {
 
@@ -53,46 +53,59 @@ class CampanhaController extends Controller
         ], 200);
     }
     /**
-     * Método para listar todas as campanhas com paginação
+     * Listar campanhas com filtros e paginação
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        // Validar parâmetros de paginação
-        $request->validate([
-            'page' => 'integer|min:1',
-            'per_page' => 'integer|min:1|max:100'
-        ]);
+        try {
+            $query = Campanha::query();
 
-        // Obter parâmetros de paginação (com valores padrão)
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
+            // Filtrar por import_id se fornecido
+            if ($request->has('import_id') && $request->import_id) {
+                $query->where('import_id', $request->import_id);
+            }
 
-        // Buscar campanhas com paginação
-        if ($request->has('import_id')) {
-            $campanhas = Campanha::orderBy('id', 'desc')
-            ->where('import_id', $request->input('import_id'))
-            ->paginate($perPage, ['*'], 'page', $page);
+            // Filtro de pesquisa geral
+            if ($request->has('search') && $request->search) {
+                $searchTerm = $request->search;
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('info', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('type', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('color', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('lat', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('lng', 'LIKE', "%{$searchTerm}%");
+                });
+            }
 
-        } else {
-            $campanhas = Campanha::orderBy('id', 'desc')
-            ->paginate($perPage, ['*'], 'page', $page);
+            // Filtros específicos
+            if ($request->has('name') && $request->name) {
+                $query->where('name', 'LIKE', "%{$request->name}%");
+            }
 
+            if ($request->has('type') && $request->type) {
+                $query->where('type', 'LIKE', "%{$request->type}%");
+            }
+
+            if ($request->has('color') && $request->color) {
+                $query->where('color', 'LIKE', "%{$request->color}%");
+            }
+
+            // Ordenação padrão
+            $query->orderBy('created_at', 'desc');
+
+            // Paginação
+            $perPage = $request->get('per_page', 10);
+            $campanhas = $query->paginate($perPage);
+
+            return response()->json($campanhas);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao buscar campanhas',
+                'error' => $e->getMessage()
+            ], 500);
         }
-        
-        // Retornar dados formatados para o frontend
-        return response()->json([
-            'data' => $campanhas->items(),
-            'current_page' => $campanhas->currentPage(),
-            'last_page' => $campanhas->lastPage(),
-            'per_page' => $campanhas->perPage(),
-            'total' => $campanhas->total(),
-            'from' => $campanhas->firstItem(),
-            'to' => $campanhas->lastItem(),
-            'has_more_pages' => $campanhas->hasMorePages(),
-            'path' => $campanhas->path(),
-            'next_page_url' => $campanhas->nextPageUrl(),
-            'prev_page_url' => $campanhas->previousPageUrl()
-        ]);
     }
 
     /**

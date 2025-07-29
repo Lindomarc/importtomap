@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Check, X, Edit, Save } from "lucide-vue-next";
+import { Trash2, Check, X, Edit, Save, Search, Filter, RotateCcw } from "lucide-vue-next";
 
 const props = defineProps({
   importId: {
@@ -74,9 +74,43 @@ const editForm = ref({
     lng: ''
 });
 
+// Estados para filtros
+const filters = ref({
+    search: '',
+    name: '',
+    type: '',
+    color: ''
+});
+
+const showFilters = ref(false);
+
 // Estados para edição inline
 const editingField = ref<{ id: number; field: 'lat' | 'lng' } | null>(null);
 const editingValue = ref('');
+
+// Função para limpar filtros
+const clearFilters = () => {
+    filters.value = {
+        search: '',
+        name: '',
+        type: '',
+        color: ''
+    };
+    fetchCampanhas(1, paginationData.value.per_page);
+};
+
+// Função para aplicar filtros (com debounce)
+let searchTimeout: NodeJS.Timeout;
+const applyFilters = () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        fetchCampanhas(1, paginationData.value.per_page);
+    }, 500);
+};
+
+// Watch para aplicar filtros automaticamente
+import { watch } from 'vue';
+watch(filters, applyFilters, { deep: true });
 
 // Função para abrir o modal de edição
 const openEditModal = (campanha: Campanha) => {
@@ -211,13 +245,27 @@ const fetchCampanhas = async (page: number = 1, perPage: number = 10) => {
     try {
         isLoading.value = true;
 
-        const response = await axios.get("/api/campanhas", {
-            params: {
-                import_id: props.importId,
-                page: page,
-                per_page: perPage,
-            },
-        });
+        const params: any = {
+            import_id: props.importId,
+            page: page,
+            per_page: perPage,
+        };
+
+        // Adicionar filtros aos parâmetros se não estiverem vazios
+        if (filters.value.search.trim()) {
+            params.search = filters.value.search.trim();
+        }
+        if (filters.value.name.trim()) {
+            params.name = filters.value.name.trim();
+        }
+        if (filters.value.type.trim()) {
+            params.type = filters.value.type.trim();
+        }
+        if (filters.value.color.trim()) {
+            params.color = filters.value.color.trim();
+        }
+
+        const response = await axios.get("/api/campanhas", { params });
     
         paginationData.value = response.data;
         console.log(paginationData.value)
@@ -278,6 +326,123 @@ onMounted(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
             <div class="container mx-auto p-4">
+                <!-- Seção de Filtros -->
+                <div class="mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <!-- Header dos filtros -->
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Filtros de Pesquisa</h3>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            @click="showFilters = !showFilters"
+                            class="flex items-center gap-2"
+                        >
+                            <Filter class="h-4 w-4" />
+                            {{ showFilters ? 'Ocultar' : 'Mostrar' }} Filtros
+                        </Button>
+                    </div>
+                    
+                    <!-- Conteúdo dos filtros -->
+                    <div v-show="showFilters" class="p-4 space-y-4">
+                        <!-- Primeira linha: Pesquisa geral -->
+                        <div class="w-full">
+                            <Label for="search" class="text-sm font-medium text-gray-700">Pesquisa Geral</Label>
+                            <div class="relative mt-1">
+                                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    id="search"
+                                    v-model="filters.search"
+                                    placeholder="Pesquisar em todos os campos..."
+                                    class="pl-10"
+                                />
+                            </div>
+                        </div>
+                        
+                        <!-- Segunda linha: Filtros específicos -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Filtro por Nome -->
+                            <div>
+                                <Label for="filter-name" class="text-sm font-medium text-gray-700">Nome</Label>
+                                <Input
+                                    id="filter-name"
+                                    v-model="filters.name"
+                                    placeholder="Filtrar por nome..."
+                                    class="mt-1"
+                                />
+                            </div>
+                            
+                            <!-- Filtro por Tipo -->
+                            <div>
+                                <Label for="filter-type" class="text-sm font-medium text-gray-700">Tipo</Label>
+                                <Input
+                                    id="filter-type"
+                                    v-model="filters.type"
+                                    placeholder="Filtrar por tipo..."
+                                    class="mt-1"
+                                />
+                            </div>
+                            
+                            <!-- Filtro por Cor -->
+                            <div>
+                                <Label for="filter-color" class="text-sm font-medium text-gray-700">Cor</Label>
+                                <Input
+                                    id="filter-color"
+                                    v-model="filters.color"
+                                    placeholder="Filtrar por cor..."
+                                    class="mt-1"
+                                />
+                            </div>
+                        </div>
+                        
+                        <!-- Botões de ação -->
+                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                @click="clearFilters"
+                                class="flex items-center gap-2"
+                            >
+                                <RotateCcw class="h-4 w-4" />
+                                Limpar Filtros
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicadores de filtros ativos -->
+                <div v-if="filters.search || filters.name || filters.type || filters.color" class="mb-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm text-gray-600">Filtros ativos:</span>
+                        
+                        <span v-if="filters.search" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs">
+                            Pesquisa: "{{ filters.search }}"
+                            <button @click="filters.search = ''" class="hover:text-blue-600">
+                                <X class="h-3 w-3" />
+                            </button>
+                        </span>
+                        
+                        <span v-if="filters.name" class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs">
+                            Nome: "{{ filters.name }}"
+                            <button @click="filters.name = ''" class="hover:text-green-600">
+                                <X class="h-3 w-3" />
+                            </button>
+                        </span>
+                        
+                        <span v-if="filters.type" class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded-md text-xs">
+                            Tipo: "{{ filters.type }}"
+                            <button @click="filters.type = ''" class="hover:text-purple-600">
+                                <X class="h-3 w-3" />
+                            </button>
+                        </span>
+                        
+                        <span v-if="filters.color" class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 rounded-md text-xs">
+                            Cor: "{{ filters.color }}"
+                            <button @click="filters.color = ''" class="hover:text-orange-600">
+                                <X class="h-3 w-3" />
+                            </button>
+                        </span>
+                    </div>
+                </div>
                 <!-- Tabela para exibir os dados -->
                 <Table>
                     <TableHeader>
@@ -512,14 +677,14 @@ onMounted(() => {
                     </div>
                     
                     <!-- Campo Tipo -->
-                    <div class="space-y-2">
+                    <!-- <div class="space-y-2">
                         <Label for="type">Tipo</Label>
                         <Input 
                             id="type"
                             v-model="editForm.type" 
                             placeholder="Tipo da campanha"
                         />
-                    </div>
+                    </div> -->
                     
                     <!-- Campo Cor -->
                     <div class="space-y-2">
