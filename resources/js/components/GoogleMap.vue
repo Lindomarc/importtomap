@@ -2,7 +2,6 @@
   <div class="q-pa-md">
     <div class="relative" style="height: calc(100vh - 120px)">
 
-
         <!-- Conteúdo do Sidebar -->
         <GoogleMapSidebarR :selectedLocation="selectedLocation"  :isOpen="isSidebarOpen" @close="isSidebarOpen = false" />
    
@@ -49,7 +48,7 @@
         :street-view-control="false"
         :rotate-control="false"
         :map-type-id="selectedMap"
-        :map-type-control="true"
+        :map-type-control="false"
         gesture-handling="greedy"
         @loaded="onMapLoaded"
         @ready="onMapReady"

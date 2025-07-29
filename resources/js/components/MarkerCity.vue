@@ -1,18 +1,27 @@
 <template>
   <div>
     <Marker
-      v-for="city in cities"
+      v-for="city in filteredData"
       :key="city.name"
       :options="getMarkerOptions(city)"
       @click="$emit('marker-clicked', city)"
     />
   </div>
+  <GoogleMapSidebarL
+  :data="cities"
+  :isOpen="isSidebarOpen"
+  @close="isSidebarOpen = false"
+  @filtersChanged="dadosFiltrados => {
+    filteredData = dadosFiltrados
+   }"
+/>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import axios from "axios"; // Importando Axios
 import { Marker } from "vue3-google-map";
+import GoogleMapSidebarL from "./GoogleMapSidebarL.vue";
 
 // Definição das propriedades (props)
 const props = defineProps({
@@ -22,6 +31,12 @@ const props = defineProps({
   },
 });
 
+// Controle da Drawer
+const isSidebarOpen = ref(true);
+const filteredData = ref()
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value;
+}
 // Tipagem para os dados da cidade
 interface City {
   id: number;
@@ -48,25 +63,23 @@ const fetchCities = async (): Promise<void> => {
         import_id: props.importId, // Passando o importId como parâmetro import_id
       },
     });
-
+    
     const result = response.data;
-    console.log(result);
+
     // Mapear os dados da API para o formato esperado
-    cities.value = result.data.map(
-      (campanha: any, index: number): City => ({
-        id: campanha.id || index + 1,
-        name: campanha.name,
-        type: campanha.type,
-        total_liquido: campanha.total_liquido,
-        position: {
-          lat: parseFloat(campanha.lat),
-          lng: parseFloat(campanha.lng),
-        },
-        info: campanha.info,
-        color: campanha.color,
-        campanha: campanha,
-      })
-    );
+    cities.value = result.data.map((campanha: any, index: number): City => ({
+      id: campanha.id || index + 1,
+      name: campanha.name,
+      type: campanha.type,
+      total_liquido: campanha.total_liquido,
+      position: {
+        lat: parseFloat(campanha.lat),
+        lng: parseFloat(campanha.lng),
+      },
+      info: campanha.info,
+      color: campanha.color,
+      campanha: campanha,
+    }));
   } catch (error) {
     console.error("Erro ao buscar campanhas:", error);
     // Fallback para dados estáticos em caso de erro
