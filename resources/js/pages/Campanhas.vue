@@ -7,7 +7,10 @@ import { Head } from '@inertiajs/vue3';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Check, X } from "lucide-vue-next";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Trash2, Check, X, Edit, Save } from "lucide-vue-next";
 
 const props = defineProps({
   importId: {
@@ -15,6 +18,7 @@ const props = defineProps({
     default: null
   }
 })
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dados',
@@ -57,9 +61,88 @@ const paginationData = ref<PaginationData>({
 
 const isLoading = ref(false);
 
+// Estados para o modal de edição
+const isModalOpen = ref(false);
+const isUpdating = ref(false);
+const editingCampanha = ref<Campanha | null>(null);
+const editForm = ref({
+    name: '',
+    info: '',
+    type: '',
+    color: '',
+    lat: '',
+    lng: ''
+});
+
 // Estados para edição inline
 const editingField = ref<{ id: number; field: 'lat' | 'lng' } | null>(null);
 const editingValue = ref('');
+
+// Função para abrir o modal de edição
+const openEditModal = (campanha: Campanha) => {
+    editingCampanha.value = campanha;
+    editForm.value = {
+        name: campanha.name || '',
+        info: campanha.info || '',
+        type: campanha.type || '',
+        color: campanha.color || '',
+        lat: campanha.lat || '',
+        lng: campanha.lng || ''
+    };
+    isModalOpen.value = true;
+};
+
+// Função para fechar o modal
+const closeModal = () => {
+    isModalOpen.value = false;
+    editingCampanha.value = null;
+    editForm.value = {
+        name: '',
+        info: '',
+        type: '',
+        color: '',
+        lat: '',
+        lng: ''
+    };
+};
+
+// Função para salvar as alterações do modal
+const saveModalChanges = async () => {
+    if (!editingCampanha.value) return;
+    
+    try {
+        isUpdating.value = true;
+        
+        const response = await axios.put(`/api/campanhas/${editingCampanha.value.id}`, {
+            name: editForm.value.name,
+            info: editForm.value.info,
+            type: editForm.value.type,
+            color: editForm.value.color,
+            lat: editForm.value.lat,
+            lng: editForm.value.lng
+        });
+        
+        // Atualizar os dados localmente
+        const index = paginationData.value.data.findIndex(c => c.id === editingCampanha.value!.id);
+        if (index !== -1) {
+            paginationData.value.data[index] = {
+                ...paginationData.value.data[index],
+                ...editForm.value
+            };
+        }
+        
+        closeModal();
+        
+        // Opcional: mostrar mensagem de sucesso
+        // alert('Campanha atualizada com sucesso!');
+        
+    } catch (error) {
+        console.error('Erro ao atualizar campanha:', error);
+        alert('Erro ao atualizar campanha. Tente novamente.');
+    } finally {
+        isUpdating.value = false;
+    }
+};
 
 // Função para iniciar edição de um campo
 const startEditing = (id: number, field: 'lat' | 'lng', currentValue: string | null) => {
@@ -73,7 +156,7 @@ const cancelEditing = () => {
     editingValue.value = '';
 };
 
-// Função para salvar edição
+// Função para salvar edição inline
 const saveEdit = async (id: number, field: 'lat' | 'lng') => {
     try {
         isLoading.value = true;
@@ -90,7 +173,7 @@ const saveEdit = async (id: number, field: 'lat' | 'lng') => {
         cancelEditing();
     } catch (error) {
         console.error(`Erro ao atualizar ${field}:`, error);
-        // alert(`Erro ao atualizar ${field}. Tente novamente.`);
+        alert(`Erro ao atualizar ${field}. Tente novamente.`);
     } finally {
         isLoading.value = false;
     }
@@ -116,7 +199,7 @@ const deleteCampanha = async (id: number) => {
         }
         
     } catch (error) {
-        console.error("Erro ao deletar name:", error);
+        console.error("Erro ao deletar campanha:", error);
         alert("Erro ao deletar campanha. Tente novamente.");
     } finally {
         isLoading.value = false;
@@ -137,7 +220,7 @@ const fetchCampanhas = async (page: number = 1, perPage: number = 10) => {
         });
     
         paginationData.value = response.data;
-        console.log(paginationData.value )
+        console.log(paginationData.value)
     } catch (error) {
         console.error("Erro ao buscar campanhas:", error);
     } finally {
@@ -195,43 +278,22 @@ onMounted(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
             <div class="container mx-auto p-4">
-                <!-- Controles de paginação superior -->
-                <!-- <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-600">Itens por página:</span>
-                        <Select :value="paginationData.per_page.toString()" @update:value="(value) => changePerPage(parseInt(value))">
-                            <SelectTrigger class="w-20">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="10">10</SelectItem>
-                                <SelectItem value="25">25</SelectItem>
-                                <SelectItem value="50">50</SelectItem>
-                                <SelectItem value="100">100</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    
-                    <div class="text-sm text-gray-600">
-                        Mostrando {{ paginationData.from }} até {{ paginationData.to }} de {{ paginationData.total }} resultados
-                    </div>
-                </div> -->
-
                 <!-- Tabela para exibir os dados -->
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>Nome</TableHead>
                             <TableHead>Descrição</TableHead>
-                            <TableHead>tipo</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Cor</TableHead>
                             <TableHead>LAT</TableHead>
                             <TableHead>LNG</TableHead>
-                            <TableHead class="w-24">Ações</TableHead>
+                            <TableHead class="w-32">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <TableRow v-if="isLoading">
-                            <TableCell colspan="8" class="text-center py-8">
+                            <TableCell colspan="7" class="text-center py-8">
                                 <div class="flex items-center justify-center">
                                     <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                                     <span class="ml-2">Carregando...</span>
@@ -239,7 +301,7 @@ onMounted(() => {
                             </TableCell>
                         </TableRow>
                         <TableRow v-else-if="paginationData.data.length === 0">
-                            <TableCell colspan="8" class="text-center py-8">
+                            <TableCell colspan="7" class="text-center py-8">
                                 Nenhuma campanha encontrada
                             </TableCell>
                         </TableRow>
@@ -247,6 +309,16 @@ onMounted(() => {
                             <TableCell>{{ campanha.name }}</TableCell>
                             <TableCell>{{ campanha.info }}</TableCell>
                             <TableCell>{{ campanha.type }}</TableCell>
+                            <TableCell>
+                                <div class="flex items-center gap-2">
+                                    <div 
+                                        v-if="campanha.color"
+                                        class="w-4 h-4 rounded-full border border-gray-300"
+                                        :style="{ backgroundColor: campanha.color }"
+                                    ></div>
+                                    <span>{{ campanha.color }}</span>
+                                </div>
+                            </TableCell>
                             
                             <!-- Campo LAT editável -->
                             <TableCell>
@@ -320,14 +392,29 @@ onMounted(() => {
                             
                             <!-- Coluna de ações -->
                             <TableCell>
-                                <Button 
-                                    size="sm" 
-                                    variant="ghost" 
-                                    @click="deleteCampanha(campanha.id)"
-                                    class="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-50"
-                                >
-                                    <Trash2 class="h-4 w-4" />
-                                </Button>
+                                <div class="flex items-center gap-1">
+                                    <!-- Botão para abrir modal de edição -->
+                                    <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        @click="openEditModal(campanha)"
+                                        class="h-8 w-8 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                        title="Editar campanha"
+                                    >
+                                        <Edit class="h-4 w-4" />
+                                    </Button>
+                                    
+                                    <!-- Botão de deletar -->
+                                    <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        @click="deleteCampanha(campanha.id)"
+                                        class="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-50"
+                                        title="Deletar campanha"
+                                    >
+                                        <Trash2 class="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </TableCell>
                         </TableRow>
                     </TableBody>
@@ -394,5 +481,107 @@ onMounted(() => {
                 </div>
             </div>
         </div>
+
+        <!-- Modal de Edição -->
+        <Dialog v-model:open="isModalOpen">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Editar Campanha</DialogTitle>
+                </DialogHeader>
+                
+                <div v-if="editingCampanha" class="space-y-4 py-4">
+                    <!-- Campo Nome -->
+                    <div class="space-y-2">
+                        <Label for="name">Nome</Label>
+                        <Input 
+                            id="name"
+                            v-model="editForm.name" 
+                            placeholder="Nome da campanha"
+                        />
+                    </div>
+                    
+                    <!-- Campo Descrição -->
+                    <div class="space-y-2">
+                        <Label for="info">Descrição</Label>
+                        <Textarea 
+                            id="info"
+                            v-model="editForm.info" 
+                            placeholder="Descrição da campanha"
+                            rows="3"
+                        />
+                    </div>
+                    
+                    <!-- Campo Tipo -->
+                    <div class="space-y-2">
+                        <Label for="type">Tipo</Label>
+                        <Input 
+                            id="type"
+                            v-model="editForm.type" 
+                            placeholder="Tipo da campanha"
+                        />
+                    </div>
+                    
+                    <!-- Campo Cor -->
+                    <div class="space-y-2">
+                        <Label for="color">Cor</Label>
+                        <div class="flex items-center gap-2">
+                            <Input 
+                                id="color"
+                                v-model="editForm.color" 
+                                placeholder="#000000"
+                                class="flex-1"
+                            />
+                            <div 
+                                v-if="editForm.color"
+                                class="w-8 h-8 rounded border border-gray-300"
+                                :style="{ backgroundColor: editForm.color }"
+                            ></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Campos LAT e LNG -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label for="lat">Latitude</Label>
+                            <Input 
+                                id="lat"
+                                v-model="editForm.lat" 
+                                placeholder="Latitude"
+                                type="text"
+                            />
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <Label for="lng">Longitude</Label>
+                            <Input 
+                                id="lng"
+                                v-model="editForm.lng" 
+                                placeholder="Longitude"
+                                type="text"
+                            />
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botões de ação -->
+                <div class="flex items-center justify-end gap-2 pt-4">
+                    <Button 
+                        variant="outline" 
+                        @click="closeModal"
+                        :disabled="isUpdating"
+                    >
+                        Cancelar
+                    </Button>
+                    <Button 
+                        @click="saveModalChanges"
+                        :disabled="isUpdating"
+                        class="flex items-center gap-2"
+                    >
+                        <Save class="h-4 w-4" />
+                        {{ isUpdating ? 'Salvando...' : 'Salvar' }}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

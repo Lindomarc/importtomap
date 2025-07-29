@@ -168,20 +168,18 @@ class CampanhaController extends Controller
             ]
         ]);
     }
-    
-   /**
+    /**
      * Atualizar uma campanha específica
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, $id)
     {
         try {
-            // Validar dados de entrada
+            // Validar dados de entrada - ajustados para os campos corretos
             $request->validate([
-                'campanha' => 'nullable|string|max:255',
-                'cliente' => 'nullable|string|max:255',
-                'veiculo' => 'nullable|string|max:255',
-                'meio' => 'nullable|string|max:255',
-                'praca' => 'nullable|string|max:255',
+                'name' => 'nullable|string|max:255',
+                'info' => 'nullable|string|max:500',
+                'type' => 'nullable|string|max:255',
+                'color' => 'nullable|string|max:7', // Para hex colors (#FFFFFF)
                 'lat' => 'nullable|string|max:255',
                 'lng' => 'nullable|string|max:255'
             ]);
@@ -191,7 +189,7 @@ class CampanhaController extends Controller
 
             // Atualizar apenas os campos fornecidos
             $campanha->update($request->only([
-                'campanha', 'cliente', 'veiculo', 'meio', 'praca', 'lat', 'lng'
+                'name', 'info', 'type', 'color', 'lat', 'lng'
             ]));
 
             return response()->json([
@@ -203,6 +201,13 @@ class CampanhaController extends Controller
             return response()->json([
                 'message' => 'Campanha não encontrada'
             ], 404);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Dados inválidos',
+                'errors' => $e->errors()
+            ], 422);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erro ao atualizar campanha',
