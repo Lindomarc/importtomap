@@ -48,23 +48,25 @@ const fetchCities = async (): Promise<void> => {
         import_id: props.importId, // Passando o importId como parâmetro import_id
       },
     });
-    
-    const result = response.data;
 
+    const result = response.data;
+    console.log(result);
     // Mapear os dados da API para o formato esperado
-    cities.value = result.data.map((campanha: any, index: number): City => ({
-      id: campanha.id || index + 1,
-      name: campanha.name,
-      type: campanha.type,
-      total_liquido: campanha.total_liquido,
-      position: {
-        lat: parseFloat(campanha.lat),
-        lng: parseFloat(campanha.lng),
-      },
-      info: campanha.info,
-      color: campanha.color,
-      campanha: campanha,
-    }));
+    cities.value = result.data.map(
+      (campanha: any, index: number): City => ({
+        id: campanha.id || index + 1,
+        name: campanha.name,
+        type: campanha.type,
+        total_liquido: campanha.total_liquido,
+        position: {
+          lat: parseFloat(campanha.lat),
+          lng: parseFloat(campanha.lng),
+        },
+        info: campanha.info,
+        color: campanha.color,
+        campanha: campanha,
+      })
+    );
   } catch (error) {
     console.error("Erro ao buscar campanhas:", error);
     // Fallback para dados estáticos em caso de erro

@@ -26,4 +26,10 @@ class Campanha extends Model
         {
             return $this->belongsTo(import::class);
         }
+        // Campanha.php
+
+        public function address()
+        {
+            return $this->belongsTo(Address::class);
+        }
 }

@@ -1,111 +1,11 @@
 <template>
   <div class="q-pa-md">
     <div class="relative" style="height: calc(100vh - 120px)">
-      <!-- Sidebar -->
-      <div
-        :class="[
-          'fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50',
-          sidebarOpen ? 'translate-x-0' : 'translate-x-full',
-        ]"
-      >
-        <!-- Header do Sidebar -->
-        <div class="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-800">
-            Detalhes
-          </h2>
-          <button
-            @click="closeSidebar"
-            class="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg
-              class="w-5 h-5 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
-        </div>
+
 
         <!-- Conteúdo do Sidebar -->
-        <div class="p-4" v-if="selectedLocation">
-          <div class="mb-4">
-            <h3 class="text-xl font-bold text-gray-800 mb-2">
-              {{ selectedLocation.name }}
-            </h3>
-            <p class="text-gray-600">
-              {{ selectedLocation.info }}
-            </p>
-          </div>
-          <div class="mb-4">
-            <p class="text-gray-600 font-semibold">
-              {{ formatarEmReais(selectedLocation.total_liquido) }}
-            </p>
-          </div>
-
-          <div class="space-y-3">
-            <div class="flex items-center text-sm text-gray-500">
-              <svg
-                class="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                ></path>
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                ></path>
-              </svg>
-              Lat: {{ selectedLocation.position.lat }}
-            </div>
-            <div class="flex items-center text-sm text-gray-500">
-              <svg
-                class="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                ></path>
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                ></path>
-              </svg>
-              Lng: {{ selectedLocation.position.lng }}
-            </div>
-          </div>
-
-          <div class="mt-6 pt-4 border-t border-gray-200">
-            <div v-if="selectedLocation.type === 'portais'"
-              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-            >
-              Portal de Notícias
-            </div>
-          </div>
-        </div>
-      </div>
-
+        <GoogleMapSidebarR :selectedLocation="selectedLocation"  :isOpen="isSidebarOpen" @close="isSidebarOpen = false" />
+   
       <!-- Loading indicator -->
       <div v-if="loading" class="absolute top-4 left-4 z-40 bg-white p-3 rounded-lg shadow-lg">
         <div class="flex items-center space-x-2">
@@ -171,12 +71,15 @@ import { GoogleMap } from "vue3-google-map";
 import { ref, onMounted, nextTick, watch } from "vue";
 import MarkerPlacas from "./MarkerPlacas.vue";
 import MarkerCity from "./MarkerCity.vue";
+import GoogleMapSidebarR from "./GoogleMapSidebarR.vue";
 const props = defineProps({
   importId: {
     type: String,
     default: null
   }
 })
+
+
 const selectedMap = ref<string>("roadmap");
 const googleMapRef = ref<any | null>(null);
 const mapCenter = ref({
@@ -197,8 +100,11 @@ const apiKey =
   import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyCCBRQh6dU4DSd1kRrXeM5w0oYAnGa9vvs";
 
 // Controle da Drawer
-const sidebarOpen = ref(false);
+const isSidebarOpen = ref(false);
 
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value;
+}
 const selectedLocation = ref<{
   name: string;
   info: string;
@@ -206,10 +112,6 @@ const selectedLocation = ref<{
   position: { lat: number; lng: number };
   type: string;
 } | null>(null);
-
-function closeSidebar() {
-  sidebarOpen.value = false;
-}
 
 // Função para lidar com o clique no marcador
 const handleMarkerClick = (item: {
@@ -220,7 +122,7 @@ const handleMarkerClick = (item: {
   type: string;
 }) => {
   selectedLocation.value = item;
-  sidebarOpen.value = true;
+  isSidebarOpen.value = true;
 };
 
 // Tipagem para o GeoJSON
@@ -489,23 +391,4 @@ onMounted(async () => {
 });
 
 
-function formatarEmReais(valor: number | string): string {
-    // Verifica se o valor é um número válido
-    const valorNumerico = parseFloat(valor as string);
-    if (isNaN(valorNumerico)) {
-        console.error("O valor fornecido não é um número válido.");
-        return "R$ 0,00";
-    }
-
-    // Converte o valor para um número com duas casas decimais
-    const valorFormatadoDecimal = valorNumerico.toFixed(2);
-
-    // Substitui o ponto decimal por vírgula e adiciona separadores de milhar
-    const valorFormatado = valorFormatadoDecimal
-        .replace('.', ',') // Substitui o ponto por vírgula
-        .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Adiciona pontos de milhar
-
-    // Retorna o valor formatado com o símbolo R$
-    return `R$ ${valorFormatado}`;
-}
 </script>

@@ -80,7 +80,7 @@ const importTypes: ImportType[] = [
     { label: 'Emissoras', value: 'emissoras' },
     { label: 'Placas', value: 'placas' },
     { label: 'Portais', value: 'portais' },
-    { label: 'Campanhas', value: 'campanhas' },
+    { label: 'Edereço de Entidade', value: 'entidades' },
 ];
 
 // Funções de manipulação de arquivo
@@ -329,6 +329,7 @@ onMounted(() => {
 });
 </script>
 
+
 <template>
   <Head title="Importações" />
 
@@ -548,7 +549,7 @@ onMounted(() => {
                     size="sm"
                     variant="ghost"
                     :as="Link"
-                    :href="`/map?import_id=${record.id}`"
+                    :href="`/data?import_id=${record.id}`"
                     target="_blank"
                     class="h-8 w-8 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                   >
@@ -560,7 +561,7 @@ onMounted(() => {
                     size="sm"
                     variant="ghost"
                     :as="Link"
-                    :href="`/data?import_id=${record.id}`"
+                    :href="`/map?import_id=${record.id}`"
                     target="_blank"
                     class="h-8 w-8 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                   >

@@ -17,15 +17,20 @@ class CampanhaController extends Controller
         // Verifica se o parâmetro 'import_id' foi passado na requisição
         if ($request->has('import_id')) {
             // Se 'import_id' existe, filtra os registros pelo ID da importação
-            $items = Campanha::where('import_id', $request->input('import_id'))->get();
+            $items = Campanha::where('import_id', $request->input('import_id'))
+            ->with('address') // Carrega os dados relacionados da tabela 'addresses'
+            ->get();
         } else {
             // Se 'import_id' não existe, filtra os registros a partir do dia 1 do mês atual
             $startOfMonth = now()->startOfMonth(); // Obtém o primeiro dia do mês atual
-            $items = Campanha::whereDate('created_at', '>=', $startOfMonth)->get();
+            $items = Campanha::whereDate('created_at', '>=', $startOfMonth)
+            ->with('address')
+            ->get();
         }
     
         // Formata os dados para o retorno
         $data = [];
+        Log::info("message",[$items]);
         foreach ($items as $item) {
             if ($item->lat && $item->lng) {
                 $data[] = [
@@ -36,6 +41,8 @@ class CampanhaController extends Controller
                     'lat' => $item->lat,
                     'lng' => $item->lng,
                     'total_liquido' => $item->total_liquido,
+                    'created_at' => $item->created_at,
+                    'address' => $item->address
                 ];
             }
         }

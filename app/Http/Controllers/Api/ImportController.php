@@ -59,6 +59,7 @@ class ImportController extends Controller
                 'portais'   => 2, // Remove 2 linhas para 'portais'
                 'emissoras' => 6, // Remove 6 linhas para 'emissoras'
                 'placas'    => 3, // Remove 3 linhas para 'placas'
+                'entidades' => 1
             ];
 
             // Verifica se o tipo existe no mapa de configuração
@@ -72,7 +73,8 @@ class ImportController extends Controller
             $colors = [
                 'emissoras' => 'green',
                 'placas' => 'red',
-                'portais' => 'blue'
+                'portais' => 'blue',
+                'entidades' => 'black'
             ];
 
             // Registra importação com falha
@@ -100,16 +102,7 @@ class ImportController extends Controller
                 foreach ($rows as $index => $row) {
                     try {
                         $data = $this->validate($request, $row);
-                        // [
-                        //     'name' => $row[0] ?? null,
-                        //     'info' => $row[1] ?? null,
-                        //     'city' => $row[2] ?? null,
-                        //     'state' => $row[3] ?? null,
-                        //     'street' => $row[4] ?? null,
-                        //     'number' => $row[5] ?? null,
-                        //     'cep' => $row[6] ?? null,
-                        // ];
-//  Log::info('dd', $data);
+                
                         // Processa o campo 'meio' para extrair cidade
                         $address = $this->cidadeService->findOrCreateAddress($data);
                         $data['address_id'] = $address ? $address->id : null;
@@ -161,64 +154,97 @@ class ImportController extends Controller
     {
         $type = $request->input('type');
         $state = $request->input('state') ?? 'PR';
-        
-        if($type === 'portais'){
-            if(!!$data[1] && !!$data[3] && !!$data[11]){
-                
 
-            $total = $data[11]?$this->formatarMoeda($data[11]) : 0;
-
-                return  [
-                    'name' => $data[1] ?? null,
-                    'info' => $data[3] ?? null,
-                    'city' => $data[3] ?? null,
+        if ($type === 'portais') {
+            if (!!$data[1] && !!$data[3] && !!$data[11]) {
+                $total = $data[11] ? $this->formatarMoeda($data[11]) : 0;
+                return [
+                    'name' => $this->normalizeString($data[1] ?? null),
+                    'info' => $this->normalizeString($data[3] ?? null),
+                    'city' => $this->normalizeString($data[3] ?? null),
+                    'type' => 'portais',
                     'state' => $state,
                     'street' => null,
-                    'number' =>  null,
+                    'number' => null,
                     'total_liquido' => $total,
-                    'cep' =>  null,
+                    'cep' => null,
                 ];
-
             }
             return [];
         }
 
-        if($type === 'emissoras'){
-
-            if(!!$data[1] && !!$data[2] && !!$data[4] && !!$data[5] && !!$data[11])
-            $total = $data[11]?$this->formatarMoeda($data[11]): 0;
-            return  [
-                'name' => $data[1] ?? null,
-                'info' => $data[2] ?? null.'<br>' .$data[5] ?? null,
-                'city' => $data[3] ?? null,
-                'state' => $state,
-                'street' => null,
-                'number' =>  null,
-                'total_liquido' => $total,
-                'cep' =>  null,
-            ];
-
-        }
-
-        if($type === 'placas'){
-            if ($data[1] && $data[3] && $data[13]){
-                
-            $total = $data[13]?$this->formatarMoeda($data[13]): 0;
-                return  [
-                    'name' => $data[1] ?? null,
-                    'info' => $data[3] ?? null,
-                    'city' => $data[3] ?? null,
+        if ($type === 'emissoras') {
+            if (!!$data[1] && !!$data[2] && !!$data[4] && !!$data[5] && !!$data[11]) {
+                $total = $data[11] ? $this->formatarMoeda($data[11]) : 0;
+                return [
+                    'name' => $this->normalizeString($data[1] ?? null),
+                    'info' => $this->normalizeString(($data[2] ?? null) . '<br>' . ($data[5] ?? null)),
+                    'city' => $this->normalizeString($data[3] ?? null),
+                    'type' => 'emissoras',
                     'state' => $state,
                     'street' => null,
-                    'number' =>  null,
-                    'total_liquido' => $total ?? null,
-                    'cep' =>  null,
+                    'number' => null,
+                    'total_liquido' => $total,
+                    'cep' => null,
                 ];
-
             }
+            return [];
+        }
+
+        if ($type === 'placas') {
+            if (!!$data[1] && !!$data[3] && !!$data[13]) {
+                $total = $data[13] ? $this->formatarMoeda($data[13]) : 0;
+                return [
+                    'name' => $this->normalizeString($data[1] ?? null),
+                    'info' => $this->normalizeString($data[3] ?? null),
+                    'city' => $this->normalizeString($data[3] ?? null),
+                    'type' => 'placas',
+                    'state' => $state,
+                    'street' => null,
+                    'number' => null,
+                    'total_liquido' => $total,
+                    'cep' => null,
+                ];
+            }
+            return [];
+        }
+
+        if ($type === 'empresa') {
+            if (!!$data[0] && !!$data[1] && !!$data[2] && !!$data[3] && !!$data[4] && !!$data[5] && !!$data[6]) {
+                return [
+                    'name' => $this->normalizeString($data[0] ?? null), // Nome da empresa
+                    'info' => $this->normalizeString($data[1] ?? null), // Descrição
+                    'city' => $this->normalizeString($data[2] ?? null), // Cidade
+                    'state' => $this->normalizeString($data[3] ?? null), // Estado
+                    'street' => $this->normalizeString($data[4] ?? null), // Rua
+                    'number' => $this->normalizeString($data[5] ?? null), // Número
+                    'cep' => $this->normalizeString($data[6] ?? null), // CEP
+                ];
+            }
+            return [];
         }
         return [];
-        
+    }
+
+    private function normalizeString($string): string
+    {
+        if (empty($string)) {
+            return '';
+        }
+
+        // Converte para maiúsculas
+        $string = mb_strtoupper($string, 'UTF-8');
+
+        // Remove acentuação usando iconv
+        $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+
+        // Remove caracteres não alfanuméricos (exceto espaço)
+        $string = preg_replace('/[^A-Z0-9\s]/', '', $string);
+
+        // Remove espaços extras
+        $string = trim(preg_replace('/\s+/', ' ', $string));
+
+        return $string;
     }
 
     function formatarMoeda(string $valor): string
