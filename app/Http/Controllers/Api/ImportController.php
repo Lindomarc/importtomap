@@ -154,7 +154,7 @@ class ImportController extends Controller
     {
         $type = $request->input('type');
         $state = $request->input('state') ?? 'PR';
-
+        $street = $this->normalizeString($data[6] ?? null);
         if ($type === 'portais') {
             if (!!$data[1] && !!$data[3] && !!$data[11]) {
                 $total = $data[11] ? $this->formatarMoeda($data[11]) : 0;
@@ -164,7 +164,7 @@ class ImportController extends Controller
                     'city' => $this->normalizeString($data[3] ?? null),
                     'type' => 'portais',
                     'state' => $state,
-                    'street' => null,
+                    'street' => $street,
                     'number' => null,
                     'total_liquido' => $total,
                     'cep' => null,
@@ -174,36 +174,63 @@ class ImportController extends Controller
         }
 
         if ($type === 'emissoras') {
-            if (!!$data[1] && !!$data[2] && !!$data[4] && !!$data[5] && !!$data[11]) {
-                $total = $data[11] ? $this->formatarMoeda($data[11]) : 0;
+            Log::info('ddd', [$data[0]]);
+            if (!!$data[0] && !!$data[1] && !!$data[3] && !!$data[4] && !!$data[39]) {
+                $total = $data[39] ? $this->formatarMoeda($data[39]) : 0;
                 return [
-                    'name' => $this->normalizeString($data[1] ?? null),
-                    'info' => $this->normalizeString(($data[2] ?? null) . '<br>' . ($data[5] ?? null)),
-                    'city' => $this->normalizeString($data[3] ?? null),
+                    'name' => $this->normalizeString($data[0] ?? null),
+                    'info' => $this->normalizeString(($data[1] ?? null) . '<br>' . ($data[4] ?? null)),
+                    'city' => $this->normalizeString($data[2] ?? null),
                     'type' => 'emissoras',
                     'state' => $state,
                     'street' => null,
                     'number' => null,
                     'total_liquido' => $total,
-                    'cep' => null,
+                    'cep' => 0,
                 ];
             }
             return [];
         }
 
         if ($type === 'placas') {
-            if (!!$data[1] && !!$data[3] && !!$data[13]) {
-                $total = $data[13] ? $this->formatarMoeda($data[13]) : 0;
+            // Variáveis para armazenar informações do grupo atual
+            static $currentVehicle = null;
+            static $currentFormat = null;
+            static $currentCity = null;
+            // Verificar se o veículo mudou
+            if (!empty($data[1])) { // Coluna "Veículo"
+                $currentVehicle = $this->normalizeString($data[1]);
+                $info = null; // Resetar o formato ao mudar de veículo
+                $currentCity = null;   // Resetar a cidade ao mudar de veículo
+            }
+        
+            // Verificar se a cidade mudou
+            if (!empty($data[4])) { // Coluna "Cidade"
+                $currentCity = $this->normalizeString($data[4]);
+            }          
+            // Verificar se a UF mudou
+            if (!empty($data[5])) { // Coluna "UF"
+                $currentCity = $this->normalizeString($data[5]);
+            }
+        
+            // Verificar se o formato mudou
+            if (!empty($data[6])) { // Coluna "Produto"
+                $info = $this->normalizeString($data[6]) ;
+            }
+        
+            // Validar e montar o array final
+            if (!!$currentVehicle && !!$info && !!$data[12]) {
+                $total = $data[12] ? $this->formatarMoeda($data[12]) : 0;
                 return [
-                    'name' => $this->normalizeString($data[1] ?? null),
-                    'info' => $this->normalizeString($data[3] ?? null),
-                    'city' => $this->normalizeString($data[3] ?? null),
+                    'name' => $currentVehicle,
+                    'info' => $info,
+                    'city' => $currentCity,
                     'type' => 'placas',
                     'state' => $state,
-                    'street' => null,
-                    'number' => null,
+                    'street' => $this->normalizeString($data[6] ?? null), // Produto/Rua
+                    'number' => 0,
                     'total_liquido' => $total,
-                    'cep' => null,
+                    'cep' => 0,
                 ];
             }
             return [];

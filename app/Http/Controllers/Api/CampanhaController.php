@@ -30,7 +30,7 @@ class CampanhaController extends Controller
     
         // Formata os dados para o retorno
         $data = [];
-        Log::info("message",[$items]);
+        // Log::info("message",[$items]);
         foreach ($items as $item) {
             if ($item->lat && $item->lng) {
                 $data[] = [
