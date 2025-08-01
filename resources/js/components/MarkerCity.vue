@@ -1,11 +1,16 @@
 <template>
-  <div>
-    <Marker
-      v-for="city in filteredData"
-      :key="city.name"
-      :options="getMarkerOptions(city)"
-      @click="$emit('marker-clicked', city)"
-    />
+  <div>   
+  
+   <MarkerCluster>
+
+      <Marker
+        v-for="city in filteredData"
+        :key="city.name"
+        :options="getMarkerOptions(city)"
+        @click="$emit('marker-clicked', city)"
+      />
+    
+   </MarkerCluster>
   </div>
   <GoogleMapSidebarL
   :data="cities"
@@ -20,7 +25,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import axios from "axios"; // Importando Axios
-import { Marker } from "vue3-google-map";
+import { Marker, MarkerCluster } from "vue3-google-map";
 import GoogleMapSidebarL from "./GoogleMapSidebarL.vue";
 
 // Definição das propriedades (props)

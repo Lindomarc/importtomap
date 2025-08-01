@@ -120,13 +120,13 @@ class ImportController extends Controller
                         }
                     } catch (\Exception $e) {
                         $erros[] = "Linha " . ($index + 1) . ": " . $e->getMessage();
-                        Log::info("errors", [$erros]);
                     }
                 }
         
                 // Mensagem de sucesso
                 $message = "Importação concluída. {$sucessos} campanhas importadas.";
                 if (!empty($erros)) {
+                    Log::info("import store",[$erros]);
                 }
         
                 return response()->json(['message' => $message], 200);
@@ -156,12 +156,12 @@ class ImportController extends Controller
         $state = $request->input('state') ?? 'PR';
         $street = $this->normalizeString($data[6] ?? null);
         if ($type === 'portais') {
-            if (!!$data[1] && !!$data[3] && !!$data[11]) {
+            if (!!$data[0] && !!$data[3] && !!$data[4]) {
                 $total = $data[11] ? $this->formatarMoeda($data[11]) : 0;
                 return [
-                    'name' => $this->normalizeString($data[1] ?? null),
+                    'name' => $this->normalizeString($data[0] ?? null),
                     'info' => $this->normalizeString($data[3] ?? null),
-                    'city' => $this->normalizeString($data[3] ?? null),
+                    'city' => $this->normalizeString($data[2] ?? null),
                     'type' => 'portais',
                     'state' => $state,
                     'street' => $street,
@@ -174,7 +174,6 @@ class ImportController extends Controller
         }
 
         if ($type === 'emissoras') {
-            Log::info('ddd', [$data[0]]);
             if (!!$data[0] && !!$data[1] && !!$data[3] && !!$data[4] && !!$data[39]) {
                 $total = $data[39] ? $this->formatarMoeda($data[39]) : 0;
                 return [
@@ -239,13 +238,13 @@ class ImportController extends Controller
         if ($type === 'empresa') {
             if (!!$data[0] && !!$data[1] && !!$data[2] && !!$data[3] && !!$data[4] && !!$data[5] && !!$data[6]) {
                 return [
-                    'name' => $this->normalizeString($data[0] ?? null), // Nome da empresa
-                    'info' => $this->normalizeString($data[1] ?? null), // Descrição
-                    'city' => $this->normalizeString($data[2] ?? null), // Cidade
-                    'state' => $this->normalizeString($data[3] ?? null), // Estado
-                    'street' => $this->normalizeString($data[4] ?? null), // Rua
-                    'number' => $this->normalizeString($data[5] ?? null), // Número
-                    'cep' => $this->normalizeString($data[6] ?? null), // CEP
+                    'name' => $this->normalizeString($data[2] ?? null), // Nome da empresa
+                    'info' => $this->normalizeString($data[3] ?? '') . '  ' .$this->normalizeString($data[4] ?? ''). '  ' .$this->normalizeString($data[5] ?? '') , // Descrição
+                    'city' => $this->normalizeString($data[0] ?? null), // Cidade
+                    'state' => $this->normalizeString($data[10] ?? null), // Estado
+                    'street' => $this->normalizeString($data[5] ?? null), // Rua
+                    'number' => $this->normalizeString($data[6] ?? null), // Número
+                    'cep' => $this->normalizeString($data[4] ?? null), // CEP
                 ];
             }
             return [];
