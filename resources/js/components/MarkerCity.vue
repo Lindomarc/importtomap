@@ -1,25 +1,24 @@
 <template>
-  <div>   
-  
-   <MarkerCluster>
-
+  <div>
+    <MarkerCluster>
       <Marker
         v-for="city in filteredData"
         :key="city.name"
         :options="getMarkerOptions(city)"
         @click="$emit('marker-clicked', city)"
       />
-    
-   </MarkerCluster>
+    </MarkerCluster>
   </div>
   <GoogleMapSidebarL
-  :data="cities"
-  :isOpen="isSidebarOpen"
-  @close="isSidebarOpen = false"
-  @filtersChanged="dadosFiltrados => {
-    filteredData = dadosFiltrados
-   }"
-/>
+    :data="cities"
+    :isOpen="isSidebarOpen"
+    @close="isSidebarOpen = false"
+    @filtersChanged="
+      (dadosFiltrados) => {
+        filteredData = dadosFiltrados;
+      }
+    "
+  />
 </template>
 
 <script setup lang="ts">
@@ -38,7 +37,7 @@ const props = defineProps({
 
 // Controle da Drawer
 const isSidebarOpen = ref(true);
-const filteredData = ref()
+const filteredData = ref();
 function toggleSidebar() {
   isSidebarOpen.value = !isSidebarOpen.value;
 }
@@ -68,23 +67,25 @@ const fetchCities = async (): Promise<void> => {
         import_id: props.importId, // Passando o importId como parâmetro import_id
       },
     });
-    
+
     const result = response.data;
 
     // Mapear os dados da API para o formato esperado
-    cities.value = result.data.map((campanha: any, index: number): City => ({
-      id: campanha.id || index + 1,
-      name: campanha.name,
-      type: campanha.type,
-      total_liquido: campanha.total_liquido,
-      position: {
-        lat: parseFloat(campanha.lat),
-        lng: parseFloat(campanha.lng),
-      },
-      info: campanha.info,
-      color: campanha.color,
-      campanha: campanha,
-    }));
+    cities.value = result.data.map(
+      (campanha: any, index: number): City => ({
+        id: campanha.id || index + 1,
+        name: campanha.name,
+        type: campanha.type,
+        total_liquido: campanha.total_liquido,
+        position: {
+          lat: parseFloat(campanha.lat),
+          lng: parseFloat(campanha.lng),
+        },
+        info: campanha.info,
+        color: campanha.color,
+        campanha: campanha,
+      })
+    );
   } catch (error) {
     console.error("Erro ao buscar campanhas:", error);
     // Fallback para dados estáticos em caso de erro

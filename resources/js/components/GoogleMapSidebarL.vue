@@ -272,7 +272,7 @@ interface Filters {
 const props = defineProps<{
   data: Location[];
 }>();
-const isOpen = ref(true);
+const isOpen = ref(false);
 
 const emit = defineEmits<{
   close: [];
