@@ -5,33 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Address extends Model
+class Entity extends Model
 {
     use HasFactory;
 
     // Nome da tabela no banco de dados
-    protected $table = 'addresses';
+    protected $table = 'entities';
 
     // Campos que podem ser preenchidos em massa (mass assignment)
     protected $fillable = [
-        'city',
-        'state',
-        'street',
-        'number',
-        'cep',
-        'lat',
-        'lng',
+        'name',
+        'razao_social',
+        'type',
+        'cnpj_cpf',
+        'codigo_tabela',
+        'codigo',
+        'praca',
+        'rede',
+        'address_id',
     ];
 
-    protected $casts = [
-        'lat' => 'decimal:11',
-        'lng' => 'decimal:11'
-    ];
-    
-    // Relacionamento com o modelo Entity
-    public function entities()
+    // Relacionamento com o modelo Address
+    public function address()
     {
-        return $this->hasMany(Entity::class, 'address_id');
+        return $this->belongsTo(Address::class, 'address_id');
     }
 
     // Atributos que devem ser tratados como datas

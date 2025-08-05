@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Api\CampanhaController;
 use App\Http\Controllers\Api\ImportController;
+use App\Http\Controllers\Api\EntityController;
 
 
 // Rota para listar todas as campanhas
@@ -21,7 +22,8 @@ Route::put('/campanhas/{id}', [CampanhaController::class, 'update']);
 // Rota para excluir uma campanha
 Route::delete('/campanhas/{id}', [CampanhaController::class, 'destroy']);
 
-
+Route::apiResource('entities', EntityController::class);
+Route::post('/entities/import', [EntityController::class, 'import'])->name('entities.import');
 // Adicione essas rotas ao seu arquivo web.php
 
 Route::prefix('imports')->name('imports.')->group(function () {

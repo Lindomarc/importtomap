@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\CampanhaInertiaController;
+use App\Http\Controllers\EntityInertiaController;
 
 Route::get('/', function () {
     return Inertia::render('Map');
@@ -16,7 +17,11 @@ Route::get('dashboard', function () {
 Route::get('map/{import_id?}', [CampanhaInertiaController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('map');
-    
+
+Route::get('entities', [EntityInertiaController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('entities');
+
 Route::get('imports', function () {
     return Inertia::render('Imports/Index');
 })->middleware(['auth', 'verified'])->name('imports');
