@@ -24,7 +24,12 @@ const mainNavItems: NavItem[] = [
         title: 'Importações',
         href: '/imports',
         icon: LayoutGrid,
-    }
+    },
+    {
+        title: 'Entidade',
+        href: '/entities',
+        icon: LayoutGrid,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

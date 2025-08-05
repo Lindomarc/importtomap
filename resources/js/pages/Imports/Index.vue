@@ -329,7 +329,6 @@ onMounted(() => {
 });
 </script>
 
-
 <template>
   <Head title="Importações" />
 
@@ -339,11 +338,9 @@ onMounted(() => {
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-2xl font-bold tracking-tight">Importações</h2>
-          <p class="text-muted-foreground">
-            Gerencie suas importações de dados
-          </p>
+          <p class="text-muted-foreground">Gerencie suas importações de dados</p>
         </div>
-        
+
         <!-- Botão para abrir modal -->
         <Dialog v-model:open="modalOpen">
           <DialogTrigger as-child>
@@ -352,12 +349,12 @@ onMounted(() => {
               Nova Importação
             </Button>
           </DialogTrigger>
-          
+
           <DialogContent class="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Nova Importação</DialogTitle>
             </DialogHeader>
-            
+
             <!-- Formulário dentro do modal -->
             <form @submit.prevent="onSubmit" class="space-y-6">
               <!-- Tipo de Importação -->
@@ -451,7 +448,7 @@ onMounted(() => {
                 >
                   Cancelar
                 </Button>
-                
+
                 <Button :disabled="isUploading" type="submit">
                   <Upload v-if="!isUploading" class="h-4 w-4" />
                   <div
@@ -554,7 +551,7 @@ onMounted(() => {
                     class="h-8 w-8 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                   >
                     <Logs class="h-4 w-4" />
-                  </Button>                  
+                  </Button>
                   <!-- Botão para visualizar mapa -->
                   <Button
                     v-if="record.id"
