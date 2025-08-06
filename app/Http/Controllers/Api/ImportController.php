@@ -169,14 +169,14 @@ class ImportController extends Controller
         $state = $request->input('state') ?? 'PR';
         $street = $this->normalizeString($data[6] ?? null);
 
-        if ($type === 'portais') {
+        if ($type === 'IN') {
             if (!!$data[0] && !!$data[3] && !!$data[4]) {
                 $total = $data[11] ? $this->formatarMoeda($data[11]) : 0;
                 return [
                     'name' => $this->normalizeString($data[0] ?? null),
                     'info' => $this->normalizeString($data[3] ?? null),
                     'city' => $this->normalizeString($data[2] ?? null),
-                    'type' => 'portais',
+                    'type' => $type,
                     'state' => $state,
                     'street' => $street,
                     'number' => null,
@@ -187,14 +187,14 @@ class ImportController extends Controller
             return [];
         }
 
-        if ($type === 'emissoras') {
+        if ($type === 'RD') {
             if (!!$data[0] && !!$data[1] && !!$data[3] && !!$data[4] && !!$data[39]) {
                 $total = $data[39] ? $this->formatarMoeda($data[39]) : 0;
                 return [
                     'name' => $this->normalizeString($data[0] ?? null),
                     'info' => $this->normalizeString(($data[1] ?? null) . '<br>' . ($data[4] ?? null)),
                     'city' => $this->normalizeString($data[2] ?? null),
-                    'type' => 'emissoras',
+                    'type' => $type,
                     'state' => $state,
                     'street' => null,
                     'number' => null,
@@ -205,7 +205,7 @@ class ImportController extends Controller
             return [];
         }
 
-        if ($type === 'placas') {
+        if ($type === 'OH') {
             // Variáveis para armazenar informações do grupo atual
             static $currentVehicle = null;
             static $currentFormat = null;
@@ -238,7 +238,7 @@ class ImportController extends Controller
                     'name' => $currentVehicle,
                     'info' => $info,
                     'city' => $currentCity,
-                    'type' => 'placas',
+                    'type' => $type,
                     'state' => $state,
                     'street' => $this->normalizeString($data[6] ?? null), // Produto/Rua
                     'number' => 0,

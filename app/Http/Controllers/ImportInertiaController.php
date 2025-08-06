@@ -32,7 +32,7 @@ class ImportInertiaController extends Controller
     {
 
         $type = $request->input('type');
-        Log::info('info', [$type]);
+        // Log::info('info', [$type]);
         $request->validate([
             'file' => 'required|mimes:xlsx,csv',
         ]);
@@ -43,16 +43,16 @@ class ImportInertiaController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
 
             $rows = $sheet->toArray();
-            if($type ==='portais'){
+            if($type ==='IN'){
                 unset($rows[0],$rows[1]); // Remove cabeçalho
             }
            
             $sucessos = 0;
             $erros = [];
             $colors = [
-                'emissoras' => 'green',
-                'placas' => 'red',
-                'portais' => 'blue'
+                'RD' => 'green',
+                'OH' => 'red',
+                'IN' => 'blue'
             ];
 
             foreach ($rows as $index => $row) {
