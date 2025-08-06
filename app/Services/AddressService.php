@@ -13,9 +13,9 @@ class AddressService
     {      
         // Busca na tabela local primeiro
         $state = $address['state'] ?? 'PR';
+        // Log::info('address', $address);
         $Address = null;
         if(!!$address['cep'] && !!$address['number']){
-
             $Address = Address::where('cep', $address['cep'])
             ->where('number', $address['number'])
             ->first();
@@ -25,17 +25,35 @@ class AddressService
             return $Address;
         }
 
-        if(!!$address['street'] && !!$address['number'])
+        if(!!$address['cep']){
+            $Address = Address::where('cep', $address['cep'])
+            ->first();
+        }
+
+        if ($Address) {
+            return $Address;
+        }
+
+        if(!!$address['street'] && !!$address['number'] && !!$address['city'])
         $Address = Address::where('street', $address['street'])
         ->where('number', $address['number'])
-        ->where('state', $state)
+        ->where('city', $address['city'])
         ->first();
 
         if ($Address) {
             return $Address;
         }
 
-        if(!!$address['city'])
+        if(!!$address['street'] && $address['city'])
+        $Address = Address::where('street', $address['street'])
+        ->where('city', $address['city'])
+        ->first();
+
+        if ($Address) {
+            return $Address;
+        }
+
+        if(!!$address['city'] && !$address['street'])
 
         $Address = Address::where('city', $address['city'])
         ->where('state', $state)
@@ -68,7 +86,7 @@ class AddressService
             $coordinates = $this->fetchCoordinatesFromAddress($search);
             
             if ($coordinates) {   
-                return Address::create([
+                $data = [
                     'city' => $address['city'],
                     'cep' => $address['cep'],
                     'number' => $address['number'],
@@ -76,7 +94,9 @@ class AddressService
                     'state' => $state,
                     'lat' => $coordinates['lat'],
                     'lng' => $coordinates['lng']
-                ]);
+                ];
+                // Log::info('$data',[$address, $data]);
+                return Address::create($data);
             }
         }
         
@@ -86,6 +106,7 @@ class AddressService
    
     private function fetchCoordinatesFromAddress($search): ?array
     {
+        // Log::info("fetchCoordinatesFromAddress",[$search]);
         try {
             // Monta o endereço completo
              
@@ -94,10 +115,10 @@ class AddressService
             $query = urlencode($search);
             
             $url = "https://api.opencagedata.com/geocode/v1/json?q={$query}&key={$apiKey}&limit=1&countrycode=br";
-            Log::info('import', [$url]);
+            // \Log::info('import', [$url]);
 
             $response = Http::timeout(10)->get($url);
-            Log::info("response", [$response]);
+            // Log::info("response", [$response]);
 
             if ($response->successful()) {
                 $data = $response->json();

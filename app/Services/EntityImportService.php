@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\Entity;
 use App\Models\Address;
 use App\Services\AddressService; // Importa o AddressService
+use Illuminate\Support\Facades\Log;
 
 class EntityImportService
 {
@@ -91,12 +92,12 @@ class EntityImportService
                 // Extrai os dados do endereço
                 $addressData = [
                     'city' => $row[6], // Município
-                    'state' => $row[0], // Estado
+                    'state' => $row[0]??'PR', // Estado
                     'street' => $row[4], // Endereço
                     'number' => null, // Número pode ser extraído do endereço se necessário
                     'cep' => $row[5], // CEP
                 ];
-
+            
                 // Busca ou cria o endereço usando o AddressService
                 $address = $this->addressService->findOrCreateAddress($addressData);
 

@@ -111,7 +111,7 @@ class ImportController extends Controller
                             $data['lat'] = $existingEntity->address->lat ?? null;
                             $data['lng'] = $existingEntity->address->lng ?? null;
 
-                            Log::info("message", [$data]);
+                            // Log::info("message", [$data]);
                         } else {
                             // Processa o campo 'meio' para extrair cidade e cria um novo endereço
                             $address = $this->cidadeService->findOrCreateAddress($data);
@@ -167,9 +167,10 @@ class ImportController extends Controller
     {
         $type = $request->input('type');
         $state = $request->input('state') ?? 'PR';
-        $street = $this->normalizeString($data[6] ?? null);
 
         if ($type === 'IN') {
+            $street = $this->normalizeString($data[6] ?? null);
+
             if (!!$data[0] && !!$data[3] && !!$data[4]) {
                 $total = $data[11] ? $this->formatarMoeda($data[11]) : 0;
                 return [
@@ -189,6 +190,8 @@ class ImportController extends Controller
 
         if ($type === 'RD') {
             if (!!$data[0] && !!$data[1] && !!$data[3] && !!$data[4] && !!$data[39]) {
+                $street = $this->normalizeString($data[6] ?? null);
+
                 $total = $data[39] ? $this->formatarMoeda($data[39]) : 0;
                 return [
                     'name' => $this->normalizeString($data[0] ?? null),
@@ -196,7 +199,7 @@ class ImportController extends Controller
                     'city' => $this->normalizeString($data[2] ?? null),
                     'type' => $type,
                     'state' => $state,
-                    'street' => null,
+                    'street' => $street,
                     'number' => null,
                     'total_liquido' => $total,
                     'cep' => 0,
@@ -207,6 +210,8 @@ class ImportController extends Controller
 
         if ($type === 'OH') {
             // Variáveis para armazenar informações do grupo atual
+            $street = $this->normalizeString($data[6] ?? null);
+
             static $currentVehicle = null;
             static $currentFormat = null;
             static $currentCity = null;
@@ -240,10 +245,10 @@ class ImportController extends Controller
                     'city' => $currentCity,
                     'type' => $type,
                     'state' => $state,
-                    'street' => $this->normalizeString($data[6] ?? null), // Produto/Rua
-                    'number' => 0,
+                    'street' => $street,
+                    'number' => '',
                     'total_liquido' => $total,
-                    'cep' => 0,
+                    'cep' => '',
                 ];
             }
             return [];
