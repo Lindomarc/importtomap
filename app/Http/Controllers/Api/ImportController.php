@@ -57,9 +57,9 @@ class ImportController extends Controller
 
             // Define o número de linhas de cabeçalho para cada tipo
             $headerLinesToRemove = [
-                'portais'   => 2, // Remove 2 linhas para 'portais'
-                'emissoras' => 6, // Remove 6 linhas para 'emissoras'
-                'placas'    => 3, // Remove 3 linhas para 'placas'
+                'IN'   => 2, // Remove 2 linhas para 'IN'
+                'RD' => 6, // Remove 6 linhas para 'RD'
+                'OH'    => 3, // Remove 3 linhas para 'OH'
             ];
 
             // Verifica se o tipo existe no mapa de configuração
@@ -71,9 +71,9 @@ class ImportController extends Controller
             $sucessos = 0;
             $erros = [];
             $colors = [
-                'emissoras' => 'green',
-                'placas' => 'red',
-                'portais' => 'blue',
+                'RD' => 'green',
+                'OH' => 'red',
+                'IN' => 'blue',
             ];
 
             // Registra importação com falha

@@ -164,7 +164,7 @@ const recentlySuccessful = ref<boolean>(false);
 const errors = ref<Record<string, string>>({});
 // Import types options
 const importTypes: ImportType[] = [
-  { label: 'RD - Emissoras', value: 'RD' },
+  { label: 'RD - Rádios', value: 'RD' },
   { label: 'OH - Placas', value: 'OH' },
   { label: 'IN - Portais', value: 'IN' },
 ];
