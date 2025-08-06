@@ -172,7 +172,7 @@ const saveModalChanges = async () => {
         
     } catch (error) {
         console.error('Erro ao atualizar campanha:', error);
-        alert('Erro ao atualizar campanha. Tente novamente.');
+        // alert('Erro ao atualizar campanha. Tente novamente.');
     } finally {
         isUpdating.value = false;
     }
@@ -207,7 +207,7 @@ const saveEdit = async (id: number, field: 'lat' | 'lng') => {
         cancelEditing();
     } catch (error) {
         console.error(`Erro ao atualizar ${field}:`, error);
-        alert(`Erro ao atualizar ${field}. Tente novamente.`);
+        // alert(`Erro ao atualizar ${field}. Tente novamente.`);
     } finally {
         isLoading.value = false;
     }
@@ -234,7 +234,7 @@ const deleteCampanha = async (id: number) => {
         
     } catch (error) {
         console.error("Erro ao deletar campanha:", error);
-        alert("Erro ao deletar campanha. Tente novamente.");
+        // alert("Erro ao deletar campanha. Tente novamente.");
     } finally {
         isLoading.value = false;
     }

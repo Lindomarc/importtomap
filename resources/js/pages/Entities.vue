@@ -199,7 +199,7 @@ const saveModalChanges = async () => {
     closeModal();
   } catch (error) {
     console.error("Erro ao atualizar entidade:", error);
-    alert("Erro ao atualizar entidade. Tente novamente.");
+    // alert("Erro ao atualizar entidade. Tente novamente.");
   } finally {
     isUpdating.value = false;
   }
@@ -216,7 +216,7 @@ const deleteEntity = async (id: number) => {
     paginationData.value.data = paginationData.value.data.filter(e => e.id !== id);
   } catch (error) {
     console.error("Erro ao deletar entidade:", error);
-    alert("Erro ao deletar entidade. Tente novamente.");
+    // alert("Erro ao deletar entidade. Tente novamente.");
   } finally {
     isLoading.value = false;
   }
@@ -251,7 +251,7 @@ const handleImportSubmit = async () => {
       },
     });
 
-    alert("Importação concluída com sucesso!");
+    // alert("Importação concluída com sucesso!");
     closeImportModal();
     fetchEntities(); // Atualiza a lista após a importação
   } catch (error) {

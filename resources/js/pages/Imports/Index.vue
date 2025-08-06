@@ -77,10 +77,10 @@ const errors = ref<Record<string, string>>({});
 
 // Tipos de importação disponíveis
 const importTypes: ImportType[] = [
-    { label: 'Emissoras', value: 'emissoras' },
-    { label: 'Placas', value: 'placas' },
-    { label: 'Portais', value: 'portais' },
-    { label: 'Edereço de Entidade', value: 'entidades' },
+    { label: 'RD - Rádios', value: 'RD' },
+    { label: 'OH - Placas', value: 'OH' },
+    { label: 'IN - Portais', value: 'IN' },
+    // { label: 'Edereço de Entidade', value: 'entidades' },
 ];
 
 // Funções de manipulação de arquivo
@@ -249,7 +249,7 @@ const deleteImport = async (id: number) => {
 
     } catch (error) {
         console.error("Erro ao deletar importação:", error);
-        alert("Erro ao deletar importação. Tente novamente.");
+        // alert("Erro ao deletar importação. Tente novamente.");
     } finally {
         isLoading.value = false;
     }
@@ -272,7 +272,7 @@ const downloadErrorReport = async (id: number) => {
         window.URL.revokeObjectURL(url);
     } catch (error) {
         console.error("Erro ao baixar relatório:", error);
-        alert("Erro ao baixar relatório de erros.");
+        // alert("Erro ao baixar relatório de erros.");
     }
 };
 
