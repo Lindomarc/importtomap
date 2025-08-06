@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\Campanha;
 use App\Models\Upload;
 use App\Models\Import;
+use App\Models\Entity;
 use App\Services\AddressService;
 use Illuminate\Support\Facades\Log;
 
@@ -59,7 +60,6 @@ class ImportController extends Controller
                 'portais'   => 2, // Remove 2 linhas para 'portais'
                 'emissoras' => 6, // Remove 6 linhas para 'emissoras'
                 'placas'    => 3, // Remove 3 linhas para 'placas'
-                'entidades' => 1
             ];
 
             // Verifica se o tipo existe no mapa de configuração
@@ -74,7 +74,6 @@ class ImportController extends Controller
                 'emissoras' => 'green',
                 'placas' => 'red',
                 'portais' => 'blue',
-                'entidades' => 'black'
             ];
 
             // Registra importação com falha
@@ -97,22 +96,36 @@ class ImportController extends Controller
         //     }
         // try {
             // Processa cada linha do arquivo
-            if($import){
-                
+            if ($import) {
                 foreach ($rows as $index => $row) {
                     try {
+                        // Valida os dados da linha
                         $data = $this->validate($request, $row);
-                
-                        // Processa o campo 'meio' para extrair cidade
-                        $address = $this->cidadeService->findOrCreateAddress($data);
-                        $data['address_id'] = $address ? $address->id : null;
-                        $data['lat'] = $address ? $address->lat : null;
-                        $data['lng'] = $address ? $address->lng : null;
+            
+                        // Verifica se já existe uma entidade com o mesmo nome (name)
+                        $existingEntity = Entity::where('name', $data['name'])->first();
+            
+                        if ($existingEntity) {
+                            // Usa o address_id da entidade existente
+                            $data['address_id'] = $existingEntity->address_id;
+                            $data['lat'] = $existingEntity->address->lat ?? null;
+                            $data['lng'] = $existingEntity->address->lng ?? null;
+
+                            Log::info("message", [$data]);
+                        } else {
+                            // Processa o campo 'meio' para extrair cidade e cria um novo endereço
+                            $address = $this->cidadeService->findOrCreateAddress($data);
+                            $data['address_id'] = $address ? $address->id : null;
+                            $data['lat'] = $address ? $address->lat : null;
+                            $data['lng'] = $address ? $address->lng : null;
+                        }
+            
+                        // Define a cor com base no tipo
                         $data['color'] = $colors[$type] ?? null;
-        
+            
                         // Associa o upload ao registro da campanha
                         $data['import_id'] = $import->id;
-        
+            
                         // Cria a campanha se os campos obrigatórios estiverem presentes
                         if ($data['name'] && $data['info']) {
                             $campanha = Campanha::create($data);
@@ -122,16 +135,16 @@ class ImportController extends Controller
                         $erros[] = "Linha " . ($index + 1) . ": " . $e->getMessage();
                     }
                 }
-        
+            
                 // Mensagem de sucesso
                 $message = "Importação concluída. {$sucessos} campanhas importadas.";
                 if (!empty($erros)) {
-                    Log::info("import store",[$erros]);
+                    Log::info("import store", [$erros]);
                 }
-        
+            
                 return response()->json(['message' => $message], 200);
-        
             }
+
         // } catch (\Exception $e) {
         //     // Registra importação com falha
         //     Import::create([
@@ -155,6 +168,7 @@ class ImportController extends Controller
         $type = $request->input('type');
         $state = $request->input('state') ?? 'PR';
         $street = $this->normalizeString($data[6] ?? null);
+
         if ($type === 'portais') {
             if (!!$data[0] && !!$data[3] && !!$data[4]) {
                 $total = $data[11] ? $this->formatarMoeda($data[11]) : 0;
@@ -235,20 +249,6 @@ class ImportController extends Controller
             return [];
         }
 
-        if ($type === 'empresa') {
-            if (!!$data[0] && !!$data[1] && !!$data[2] && !!$data[3] && !!$data[4] && !!$data[5] && !!$data[6]) {
-                return [
-                    'name' => $this->normalizeString($data[2] ?? null), // Nome da empresa
-                    'info' => $this->normalizeString($data[3] ?? '') . '  ' .$this->normalizeString($data[4] ?? ''). '  ' .$this->normalizeString($data[5] ?? '') , // Descrição
-                    'city' => $this->normalizeString($data[0] ?? null), // Cidade
-                    'state' => $this->normalizeString($data[10] ?? null), // Estado
-                    'street' => $this->normalizeString($data[5] ?? null), // Rua
-                    'number' => $this->normalizeString($data[6] ?? null), // Número
-                    'cep' => $this->normalizeString($data[4] ?? null), // CEP
-                ];
-            }
-            return [];
-        }
         return [];
     }
 

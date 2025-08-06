@@ -8,7 +8,7 @@ use App\Models\Campanha;
 use App\Services\AddressService;
 use Illuminate\Support\Facades\Log;
 
-class ImportController extends Controller
+class ImportInertiaController extends Controller
 {
 
     private $cidadeService;
@@ -66,7 +66,7 @@ class ImportController extends Controller
                         'number' => $row[5] ?? null,
                         'cep' => $row[6] ?? null,
                     ];
-Log::info('loo',$data);
+
                     // Processa o campo 'meio' para extrair cidade
                     $address = $this->cidadeService->findOrCreateAddress($data);
                     $data['address_id'] = $address ? $address->id : null;

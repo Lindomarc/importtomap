@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ImportController;
+use App\Http\Controllers\ImportInertiaController;
 use App\Http\Controllers\CampanhaInertiaController;
 use App\Http\Controllers\EntityInertiaController;
 
@@ -31,8 +31,8 @@ Route::get('data/{import_id?}', [CampanhaInertiaController::class, 'show'])
     ->name('show');
     
 
-Route::get('/imports/upload', [ImportController::class, 'index'])->name('imports.upload');
-Route::post('/imports/process', [ImportController::class, 'import'])->name('imports.process');
+Route::get('/imports/upload', [ImportInertiaController::class, 'index'])->name('imports.upload');
+Route::post('/imports/process', [ImportInertiaController::class, 'import'])->name('imports.process');
 
 
 require __DIR__.'/settings.php';

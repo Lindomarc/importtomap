@@ -33,4 +33,35 @@ class Entity extends Model
 
     // Atributos que devem ser tratados como datas
     protected $dates = ['created_at', 'updated_at'];
+
+    // Método para acessar o tipo formatado
+    public function getTypeFormattedAttribute()
+    {
+        $types = [
+            'OH' => 'Outdoor',
+            'IN' => 'Internet',
+            'RD' => 'Rádio',
+            'JN' => 'Jornal',
+            'TV' => 'Televisão',
+            'RE' => 'Revista',
+            'GR' => 'Gráfica',
+            'OU' => 'Outros',
+        ];
+
+        return $types[$this->type] ?? 'Desconhecido';
+    }
+
+    // Método para acessar o CNPJ/CPF formatado
+    public function getCnpjCpfFormattedAttribute()
+    {
+        if (strlen($this->cnpj_cpf) === 14) {
+            // Formata como CNPJ
+            return preg_replace("/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/", "\$1.\$2.\$3/\$4-\$5", $this->cnpj_cpf);
+        } elseif (strlen($this->cnpj_cpf) === 11) {
+            // Formata como CPF
+            return preg_replace("/(\d{3})(\d{3})(\d{3})(\d{2})/", "\$1.\$2.\$3-\$4", $this->cnpj_cpf);
+        }
+
+        return $this->cnpj_cpf;
+    }
 }
